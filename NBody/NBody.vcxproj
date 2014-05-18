@@ -57,7 +57,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(FREEGLUT_HOME)\inc;$(GLEW_HOME)\include;$(GLM_HOME)\glm;$(IncludePath)</IncludePath>
+    <IncludePath>$(FREEGLUT_HOME)\inc;$(GLEW_HOME)\include;$(GLM_HOME);$(IncludePath)</IncludePath>
     <LibraryPath>$(GLEW_HOME)\lib\Release\Win32;$(FREEGLUT_HOME)\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

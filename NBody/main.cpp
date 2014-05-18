@@ -8,10 +8,6 @@
 #include <glm\glm.hpp>
 #include <glm\gtx\transform.hpp>
 
-//	Cuda stuff
-#include <cuda.h>
-#include <cuda_gl_interop.h>
-
 //	Various
 #include <stdlib.h>
 #include <time.h>
@@ -37,6 +33,11 @@ const float ZOOM = 15.0f;
 
 //	Sim Config
 const int NUM_PARTICLES = 3000000;
+
+const float Mtot = 96.9e10;					//	Total Mass of the galaxy, disk and dark halo (SM)
+const float md = 0.02;						//	Fraction of the total mass belonging to the galactic disk (regular matter)
+const float mPart = Mtot * md;				//	Mass per particle (SM)
+
 const float Rs = 3130.0f;					//	Scale radius for stellar density (Pcs)
 const float Mt = 100.0f;					//	Total mass of galaxy (in solar masses)
 
@@ -77,15 +78,11 @@ void init(){
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * NUM_PARTICLES, 0, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	cudaGLRegisterBufferObject(posArray);
+	
 
-	float *d_posArray;
+	genBodies(posArray, velArray, Rs, NUM_PARTICLES);
 
-	cudaGLMapBufferObject( (void **)&d_posArray, posArray);
-
-	genBodies(d_posArray, Rs, NUM_PARTICLES);
-
-	cudaGLUnmapBufferObject(posArray);
+	
 	
 	glm::mat4 model = glm::scale(glm::vec3(1.0));
 	glm::mat4 view = glm::lookAt(glm::vec3(0.0,0.0,1.0), glm::vec3(0.0,0.0,0.0), glm::vec3(0.0,1.0,0.0));

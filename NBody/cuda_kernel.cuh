@@ -1,3 +1,4 @@
 #pragma once
+#include <GL\glew.h>
 
-void genBodies(float *d_pos, float Rs, int NUM);
+void genBodies(GLuint posVBO, GLuint velVBO, float Rs, int SIZE);

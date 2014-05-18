@@ -1,7 +1,7 @@
-#include <iostream>
 #include "cuda_kernel.cuh"
 #include <cmath>
 #include <cuda.h>
+#include <cuda_gl_interop.h>
 #include <curand.h>
 #include <device_launch_parameters.h>
 
@@ -33,7 +33,12 @@ __global__ void cudaGenBodies(float *d_pos, float *d_rands, float Rs, int SIZE){
 	}	
 }
 
-void genBodies(float *d_pos, float Rs, int SIZE){
+void genBodies(GLuint posVBO, GLuint velVBO, float Rs, int SIZE){
+
+	cudaGLRegisterBufferObject(posVBO);
+	float *d_pos;
+	cudaGLMapBufferObject( (void **)&d_pos, posVBO);
+
 
 	int blockSize = 256;
 	int blocks = SIZE / blockSize + (SIZE % blockSize == 0 ? 0:1);
@@ -51,4 +56,6 @@ void genBodies(float *d_pos, float Rs, int SIZE){
 
 	cudaFree(d_randoms);
 	curandDestroyGenerator(gen);
+
+	cudaGLUnmapBufferObject(posVBO);
 }

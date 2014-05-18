@@ -35,11 +35,11 @@ const float ZOOM = 15.0f;
 const int NUM_PARTICLES = 3000000;
 
 const float Mtot = 96.9e10;					//	Total Mass of the galaxy, disk and dark halo (SM)
-const float md = 0.02;						//	Fraction of the total mass belonging to the galactic disk (regular matter)
-const float mPart = Mtot * md;				//	Mass per particle (SM)
+const float Msf = 0.02;						//	Fraction of the total mass belonging to the galactic disk (regular matter)
+const float MPart = Mtot * Msf;				//	Mass per particle (SM)
 
-const float Rs = 3130.0f;					//	Scale radius for stellar density (Pcs)
-const float Mt = 100.0f;					//	Total mass of galaxy (in solar masses)
+const float Rs = 3130.0f;					//	Scale radius for stellar density distribution (Pcs)
+const float Rdm = Rs * 2;					//	Scale radius for dark matter density distribution (Pcs)
 
 
 //	Various
@@ -78,10 +78,13 @@ void init(){
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * NUM_PARTICLES, 0, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+	glGenBuffers(1, &velArray);
+	glBindBuffer(GL_ARRAY_BUFFER, velArray);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * NUM_PARTICLES, 0, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
 	
-
-	genBodies(posArray, velArray, Rs, NUM_PARTICLES);
-
+	genBodies(posArray, velArray, NUM_PARTICLES, Mtot * Msf, Rs, Mtot * (1.0f - Msf), Rdm);
 	
 	
 	glm::mat4 model = glm::scale(glm::vec3(1.0));

@@ -41,6 +41,8 @@ const float MPart = Mtot * Msf;				//	Mass per particle (SM)
 const float Rs = 3130.0f;					//	Scale radius for stellar density distribution (Pcs)
 const float Rdm = Rs * 2;					//	Scale radius for dark matter density distribution (Pcs)
 
+const float dT = 0.1f;						//	Time increment in each simulation step (Myr)
+
 
 //	Various
 GLuint posArray;		//	Array in gpu memory containing (x,y,z) positional information	(Pcs)
@@ -75,12 +77,12 @@ void init(){
 
 	glGenBuffers(1, &posArray);
 	glBindBuffer(GL_ARRAY_BUFFER, posArray);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * NUM_PARTICLES, 0, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * NUM_PARTICLES, 0, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glGenBuffers(1, &velArray);
 	glBindBuffer(GL_ARRAY_BUFFER, velArray);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * NUM_PARTICLES, 0, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * NUM_PARTICLES, 0, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	
@@ -143,6 +145,7 @@ void renderScene(){
 void timer(int flag) {
 	int drawStartTime = clock();
     glutPostRedisplay();
+	moveBodiesByDT_staticPotential(posArray, velArray, dT, Mtot*Msf/NUM_PARTICLES, NUM_PARTICLES, Mtot*Msf, Rs, Mtot*(1.0f-Msf), Rdm);
 	int drawEndTime = clock();
 
 	float delayToNextFrame =  (CLOCKS_PER_SEC/MAX_FPS) - (drawEndTime-drawStartTime);

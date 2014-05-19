@@ -7,8 +7,9 @@
 
 
 
-__device__ const float kmPerPc = 3.0857e13;	//	Kilometers per Parsec
-__device__ const float G = 4.302e-3;		//	Gravitational constant in ( pc / SM ) * (km/s)^2
+__device__ const float kmPerPc = 3.0857e13;		//	Kilometers per Parsec
+__device__ const float G = 4.302e-3;			//	Gravitational constant in ( pc / SM ) * (km/s)^2
+__device__ const float velConvFactor = 1.0226;	//	Conversion factor from km/s to pc/Myr
 
 //	Modified bessel functions I0,I1,K0,K1
 __device__ float mbessi0(float x) {
@@ -92,6 +93,16 @@ __device__ float dmMassAtRadius(float r,
 	return (Mdm * r * r) / pow(r + a, 2);
 }
 
+//	Get mass of stars container in radius r
+//	according to density profile
+//	TO-DO: Implement this correctly
+__device__ float galaxyMassAtRadius(float r,
+									float Ms,	//	Total stellar mass in galaxy
+									float Rs)	//	Scale radius for density profile
+{
+	return (Ms * (Rs*Rs - (Rs*r + Rs*Rs)*exp(-r/Rs))) / Rs*Rs;
+}
+
 __global__ void cudaGenBodies(float *d_pos, float *d_vel, float *d_rands, int NUM_PARTICLES, float Ms, float Rs, float Mdm, float Rdm){
 
 	int threadId = threadIdx.x;
@@ -106,6 +117,7 @@ __global__ void cudaGenBodies(float *d_pos, float *d_vel, float *d_rands, int NU
 		float y = d_rands[baseIndex+1];
 		float z = d_rands[baseIndex+2];
 
+		
 		//	Set position
 
 		float rx = -Rs * log(1.0f - x);
@@ -118,6 +130,7 @@ __global__ void cudaGenBodies(float *d_pos, float *d_vel, float *d_rands, int NU
 		d_pos[baseIndex+1] = Sy;
 		d_pos[baseIndex+2] = Sz;
 
+		
 		//	Set velocity
 
 		float realRad = sqrt(Sx * Sx + Sy * Sy + Sz * Sz);
@@ -132,6 +145,37 @@ __global__ void cudaGenBodies(float *d_pos, float *d_vel, float *d_rands, int NU
 		d_vel[baseIndex+1] = velVector.y;
 		d_vel[baseIndex+2] = velVector.z;
 	}	
+}
+
+__global__ void cudaMoveBodiesByDT_staticPotential(float *d_pos, float *d_vel, float dT, float bodyMass, int NUM_PARTICLES, float Ms, float Rs, float Mdm, float Rdm){
+	int threadId = threadIdx.x;
+	int blockId = blockIdx.x;
+
+	int globalId = blockId * blockDim.x + threadId;
+
+
+	if(globalId < NUM_PARTICLES){
+		float3 current_pos = make_float3(d_pos[globalId * 3], d_pos[globalId * 3 + 1], d_pos[globalId * 3 + 2]);
+
+		current_pos.x += d_vel[globalId * 3] * velConvFactor * dT;
+		current_pos.y += d_vel[globalId * 3 + 1] * velConvFactor * dT;
+		current_pos.z += d_vel[globalId * 3 + 2] * velConvFactor * dT;
+
+		d_pos[globalId * 3] = current_pos.x;
+		d_pos[globalId * 3 + 1] = current_pos.y;
+		d_pos[globalId * 3 + 2] = current_pos.z;
+
+		float r = sqrt(current_pos.x * current_pos.x + current_pos.y * current_pos.y + current_pos.z * current_pos.z);
+		float totalRelevantMass = 0;
+		totalRelevantMass = dmMassAtRadius(r, Mdm, Rdm);// + galaxyMassAtRadius(r, Ms, Rs);
+
+		float accel = ((G * totalRelevantMass) / pow(r, 2)) * (1 / kmPerPc);
+		float3 accelVector = make_float3(-current_pos.x / r * accel, -current_pos.y / r * accel, -current_pos.z / r * accel);
+		
+		d_vel[globalId * 3] += accelVector.x * (dT * 3.15569e13);
+		d_vel[globalId * 3 + 1] += accelVector.y * (dT * 3.15569e13);
+		d_vel[globalId * 3 + 2] += accelVector.z * (dT * 3.15569e13);
+	}
 }
 
 void genBodies(GLuint posVBO, GLuint velVBO, int NUM_PARTICLES, float Ms, float Rs, float Mdm, float Rdm){
@@ -160,6 +204,24 @@ void genBodies(GLuint posVBO, GLuint velVBO, int NUM_PARTICLES, float Ms, float 
 
 	cudaFree(d_randoms);
 	curandDestroyGenerator(gen);
+
+	cudaGLUnmapBufferObject(posVBO);
+	cudaGLUnmapBufferObject(velVBO);
+}
+
+void moveBodiesByDT_staticPotential(GLuint posVBO, GLuint velVBO, float dT, float bodyMass, int NUM_PARTICLES, float Ms, float Rs, float Mdm, float Rdm){
+	cudaGLRegisterBufferObject(posVBO);
+	cudaGLRegisterBufferObject(velVBO);
+	float *d_pos;
+	float *d_vel;
+	cudaGLMapBufferObject( (void **)&d_pos, posVBO);
+	cudaGLMapBufferObject( (void **)&d_vel, velVBO);
+
+
+	int blockSize = 256;
+	int blocks = NUM_PARTICLES / blockSize + (NUM_PARTICLES % blockSize == 0 ? 0:1);
+
+	cudaMoveBodiesByDT_staticPotential<<<blocks, blockSize>>>(d_pos, d_vel, dT, bodyMass, NUM_PARTICLES, Ms, Rs, Mdm, Rdm);
 
 	cudaGLUnmapBufferObject(posVBO);
 	cudaGLUnmapBufferObject(velVBO);

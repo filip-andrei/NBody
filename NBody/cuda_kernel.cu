@@ -95,12 +95,12 @@ __device__ float dmMassAtRadius(float r,
 
 //	Get mass of stars container in radius r
 //	according to density profile
-//	TO-DO: Implement this correctly
+//	TO-DO: Check if this works
 __device__ float galaxyMassAtRadius(float r,
 									float Ms,	//	Total stellar mass in galaxy
 									float Rs)	//	Scale radius for density profile
 {
-	return (Ms * (Rs*Rs - (Rs*r + Rs*Rs)*exp(-r/Rs))) / Rs*Rs;
+	return (Ms * (Rs*Rs - (Rs*r + Rs*Rs)*exp(-r/Rs))) / (Rs*Rs);
 }
 
 __global__ void cudaGenBodies(float *d_pos, float *d_vel, float *d_rands, int NUM_PARTICLES, float Ms, float Rs, float Mdm, float Rdm){
@@ -167,7 +167,7 @@ __global__ void cudaMoveBodiesByDT_staticPotential(float *d_pos, float *d_vel, f
 
 		float r = sqrt(current_pos.x * current_pos.x + current_pos.y * current_pos.y + current_pos.z * current_pos.z);
 		float totalRelevantMass = 0;
-		totalRelevantMass = dmMassAtRadius(r, Mdm, Rdm);// + galaxyMassAtRadius(r, Ms, Rs);
+		totalRelevantMass = dmMassAtRadius(r, Mdm, Rdm) + galaxyMassAtRadius(r, Ms, Rs);
 
 		float accel = ((G * totalRelevantMass) / pow(r, 2)) * (1 / kmPerPc);
 		float3 accelVector = make_float3(-current_pos.x / r * accel, -current_pos.y / r * accel, -current_pos.z / r * accel);

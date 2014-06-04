@@ -166,10 +166,10 @@ __global__ void cudaMoveBodiesByDT_staticPotential(float *d_pos, float *d_vel, f
 
 		float r = sqrt(current_pos.x * current_pos.x + current_pos.y * current_pos.y + current_pos.z * current_pos.z);
 		float totalRelevantMass = 0;
-		totalRelevantMass = dmMassAtRadius(r, Mdm, Rdm) + galaxyMassAtRadius(r, Ms, Rs);
+		totalRelevantMass = dmMassAtRadius(r, Mdm, Rdm);// + galaxyMassAtRadius(r, Ms, Rs);
 
-		float accel = ((G * totalRelevantMass) / pow(r, 2)) * (1 / kmPerPc);
-		float3 accelVector = make_float3(-current_pos.x / r * accel, -current_pos.y / r * accel, -current_pos.z / r * accel);
+		float accel = -((G * totalRelevantMass) / pow(r, 2)) * (1 / kmPerPc);
+		float3 accelVector = make_float3(current_pos.x / r * accel, current_pos.y / r * accel, current_pos.z / r * accel);
 		
 		d_vel[globalId * 3] += accelVector.x * (dT * 3.15569e13);
 		d_vel[globalId * 3 + 1] += accelVector.y * (dT * 3.15569e13);
@@ -177,7 +177,7 @@ __global__ void cudaMoveBodiesByDT_staticPotential(float *d_pos, float *d_vel, f
 	}
 }
 
-__global__ void cudaMoveBodiesByDT_NBody(float *d_pos, float *d_vel, float dT, float bodyMass, int NUM_PARTICLES){
+__global__ void cudaMoveBodiesByDT_NBody(float *d_pos, float *d_vel, float dT, float bodyMass, float Mdm, float Rdm, int NUM_PARTICLES){
 	int threadId = threadIdx.x;
 	int blockId = blockIdx.x;
 
@@ -193,21 +193,41 @@ __global__ void cudaMoveBodiesByDT_NBody(float *d_pos, float *d_vel, float dT, f
 
 		float3 totalAcceleration = make_float3(0, 0, 0);	//	in km/s
 
+		//	Stellar gravitational influences
+		
 		for(int i = 0; i < NUM_PARTICLES; i++){
-			float3 destParticlePos = make_float3(d_pos[i * 3], d_pos[i * 3 + 1], d_pos[i * 3 + 2]);
+			if(globalId != i){
+				float3 destParticlePos = make_float3(d_pos[i * 3], d_pos[i * 3 + 1], d_pos[i * 3 + 2]);
 
-			float3 rVector = make_float3(-currentParticlePos.x + destParticlePos.x, -currentParticlePos.y + destParticlePos.y, -currentParticlePos.z + destParticlePos.z);
-			float r = sqrt(rVector.x * rVector.x + rVector.y * rVector.y + rVector.z * rVector.z);
-			float3 rUnit = make_float3(rVector.x / r, rVector.y / r, rVector.z / r);
+				float3 rVector = make_float3(currentParticlePos.x - destParticlePos.x, currentParticlePos.y - destParticlePos.y, currentParticlePos.z - destParticlePos.z);
+				float r = sqrt(rVector.x * rVector.x + rVector.y * rVector.y + rVector.z * rVector.z);
+				float3 rUnit = make_float3(rVector.x / r, rVector.y / r, rVector.z / r);
 
-			float acc = ((G * bodyMass) / (r*r)) * (1 / kmPerPc);
+				float acc = -((G * bodyMass) / (r*r)) * (1 / kmPerPc);
 
-			totalAcceleration.x += acc * rUnit.x;
-			totalAcceleration.y += acc * rUnit.y;
-			totalAcceleration.z += acc * rUnit.z;
+				totalAcceleration.x += acc * rUnit.x;
+				totalAcceleration.y += acc * rUnit.y;
+				totalAcceleration.z += acc * rUnit.z;
+			}
 		}
+		
+		//	---
 
-		//	Also add dark matter
+		//	Dark Matter Gravitational influence
+		
+		float3 rVector = currentParticlePos;
+		float r = sqrt(rVector.x * rVector.x + rVector.y * rVector.y + rVector.z * rVector.z);
+		float3 rUnit = make_float3(rVector.x / r, rVector.y / r, rVector.z / r);
+
+		float relevantDMMass = dmMassAtRadius(r, Mdm, Rdm);
+
+		float accFromDM = -((G * relevantDMMass) / pow(r, 2)) * (1 / kmPerPc);
+
+		totalAcceleration.x += accFromDM * rUnit.x;
+		totalAcceleration.y += accFromDM * rUnit.y;
+		totalAcceleration.z += accFromDM * rUnit.z;
+		
+		//	---
 
 		d_vel[globalId * 3] += totalAcceleration.x * (dT * 3.15569e13);
 		d_vel[globalId * 3 + 1] += totalAcceleration.y * (dT * 3.15569e13);
@@ -268,7 +288,7 @@ void moveBodiesByDT_staticPotential(GLuint posVBO, GLuint velVBO, float dT, floa
 	cudaGLUnmapBufferObject(velVBO);
 }
 
-void moveBodiesByDT_NBody(GLuint posVBO, GLuint velVBO, float dT, float bodyMass, int NUM_PARTICLES){
+void moveBodiesByDT_NBody(GLuint posVBO, GLuint velVBO, float dT, float bodyMass, float Mdm, float Rdm, int NUM_PARTICLES){
 	cudaGLRegisterBufferObject(posVBO);
 	cudaGLRegisterBufferObject(velVBO);
 	float *d_pos;
@@ -282,7 +302,7 @@ void moveBodiesByDT_NBody(GLuint posVBO, GLuint velVBO, float dT, float bodyMass
 
 	int shmem = blockSize * 3 * sizeof(float);
 
-	cudaMoveBodiesByDT_NBody<<<blocks, blockSize>>>(d_pos, d_vel, dT, bodyMass, NUM_PARTICLES);
+	cudaMoveBodiesByDT_NBody<<<blocks, blockSize>>>(d_pos, d_vel, dT, bodyMass, Mdm, Rdm, NUM_PARTICLES);
 
 
 	cudaGLUnmapBufferObject(posVBO);

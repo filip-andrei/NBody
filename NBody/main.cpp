@@ -25,6 +25,7 @@ struct ViewData{
 
 
 //	Window Config
+const char *WINDOW_TITLE = "N-Body Window";
 const int MAX_WIDTH = 800;
 const int MAX_HEIGHT = 800;
 const int MAX_FPS = 60;
@@ -32,16 +33,16 @@ const float POINT_SIZE = 1.0f;
 const float ZOOM = 15.0f;
 
 //	Sim Config
-const int NUM_PARTICLES = 4000;
+const int NUM_PARTICLES = 5120;
 
-const float Mtot = 96.9e10;					//	Total Mass of the galaxy, disk and dark halo (SM)
-const float Msf = 0.02;						//	Fraction of the total mass belonging to the galactic disk (regular matter)
-const float MPart = (Mtot * Msf) / NUM_PARTICLES;					//	Mass per particle (SM)
+const float Mtot = 96.9e10;							//	Total Mass of the galaxy, disk and dark halo (SM)
+const float Msf = 0.02;								//	Fraction of the total mass belonging to the galactic disk (regular matter)
+const float MPart = (Mtot * Msf) / NUM_PARTICLES;	//	Mass per particle (SM)
 
-const float Rs = 3130.0f;					//	Scale radius for stellar density distribution (Pcs)
-const float Rdm = Rs * 2;					//	Scale radius for dark matter density distribution (Pcs)
+const float Rs = 3130.0f;							//	Scale radius for stellar density distribution (Pcs)
+const float Rdm = Rs * 2;							//	Scale radius for dark matter density distribution (Pcs)
 
-const float dT = 0.1f;						//	Time increment in each simulation step (Myr)
+const float dT = 0.1f;								//	Time increment in each simulation step (Myr)
 
 
 //	Various
@@ -52,13 +53,15 @@ GLuint matrixID;
 glm::mat4 MVP;
 POINT mouseLoc;
 
+unsigned int elapsedTime;
+
 
 void initOpenGL(int *argc, char **argv){
 	glutInit(argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
 	glutInitWindowPosition(100, 100);
 	glutInitWindowSize(MAX_WIDTH, MAX_HEIGHT);
-	glutCreateWindow("N-body window");
+	glutCreateWindow(WINDOW_TITLE);
 
 	glewInit();
 }
@@ -96,6 +99,9 @@ void init(){
 	MVP = projection * view * model;
 
 	matrixID = glGetUniformLocation(shaderProgramID, "MVP");
+
+
+	elapsedTime = glutGet(GLUT_ELAPSED_TIME);
 }
 
 
@@ -143,18 +149,23 @@ void renderScene(){
 }
 
 void timer(int flag) {
-	int drawStartTime = clock();
     
 	glutPostRedisplay();
-	moveBodiesByDT_NBody(posArray, velArray, dT, Mtot*Msf/NUM_PARTICLES, NUM_PARTICLES);//, Mtot*Msf, Rs, Mtot*(1.0f-Msf), Rdm);
+	moveBodiesByDT_NBody(posArray, velArray, dT, MPart, Mtot * (1.0f - Msf), Rdm, NUM_PARTICLES);
+	//moveBodiesByDT_staticPotential(posArray, velArray, dT, MPart, NUM_PARTICLES, Mtot*Msf, Rs, Mtot*(1.0f-Msf), Rdm);
 	
-	int drawEndTime = clock();
+	int newElapsedTime = glutGet(GLUT_ELAPSED_TIME);
 
-	float delayToNextFrame =  (CLOCKS_PER_SEC/MAX_FPS) - (drawEndTime-drawStartTime);
+	char title[512];
+	sprintf_s(title, 512 * sizeof(char), "%s - %d ms per frame", WINDOW_TITLE, (int)(newElapsedTime - elapsedTime));
+	elapsedTime = glutGet(GLUT_ELAPSED_TIME);
+	glutSetWindowTitle(title);
+
+	float delayToNextFrame =  (CLOCKS_PER_SEC/MAX_FPS) - (newElapsedTime-elapsedTime);
     delayToNextFrame = floor(delayToNextFrame+0.5);
     delayToNextFrame < 0 ? delayToNextFrame = 0 : NULL;
 
-    glutTimerFunc(delayToNextFrame, timer, 0);
+	glutTimerFunc(delayToNextFrame, timer, 0);
 }
 
 void mouseBtnDown(int button, int state, int x, int y){

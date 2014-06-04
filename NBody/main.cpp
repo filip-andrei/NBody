@@ -33,13 +33,13 @@ const float POINT_SIZE = 1.0f;
 const float ZOOM = 15.0f;
 
 //	Sim Config
-const int NUM_PARTICLES = 5120;
+const int NUM_PARTICLES = 25600;
 
 const float Mtot = 96.9e10;							//	Total Mass of the galaxy, disk and dark halo (SM)
-const float Msf = 0.02;								//	Fraction of the total mass belonging to the galactic disk (regular matter)
+const float Msf = 0.05;								//	Fraction of the total mass belonging to the galactic disk (regular matter)
 const float MPart = (Mtot * Msf) / NUM_PARTICLES;	//	Mass per particle (SM)
 
-const float Rs = 3130.0f;							//	Scale radius for stellar density distribution (Pcs)
+const float Rs = 3160.0f;							//	Scale radius for stellar density distribution (Pcs)
 const float Rdm = Rs * 2;							//	Scale radius for dark matter density distribution (Pcs)
 
 const float dT = 0.1f;								//	Time increment in each simulation step (Myr)

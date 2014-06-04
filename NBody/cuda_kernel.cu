@@ -10,6 +10,7 @@
 __device__ const float kmPerPc = 3.0857e13;		//	Kilometers per Parsec
 __device__ const float G = 4.302e-3;			//	Gravitational constant in ( pc / SM ) * (km/s)^2
 __device__ const float velConvFactor = 1.0226;	//	Conversion factor from km/s to pc/Myr
+__device__ const float secPerMYr = 3.15569e13;	//	Number of seconds per Myr
 
 //	Modified bessel functions I0,I1,K0,K1
 __device__ float mbessi0(float x) {
@@ -171,9 +172,9 @@ __global__ void cudaMoveBodiesByDT_staticPotential(float *d_pos, float *d_vel, f
 		float accel = -((G * totalRelevantMass) / pow(r, 2)) * (1 / kmPerPc);
 		float3 accelVector = make_float3(current_pos.x / r * accel, current_pos.y / r * accel, current_pos.z / r * accel);
 		
-		d_vel[globalId * 3] += accelVector.x * (dT * 3.15569e13);
-		d_vel[globalId * 3 + 1] += accelVector.y * (dT * 3.15569e13);
-		d_vel[globalId * 3 + 2] += accelVector.z * (dT * 3.15569e13);
+		d_vel[globalId * 3] += accelVector.x * (dT * secPerMYr);
+		d_vel[globalId * 3 + 1] += accelVector.y * (dT * secPerMYr);
+		d_vel[globalId * 3 + 2] += accelVector.z * (dT * secPerMYr);
 	}
 }
 
@@ -221,7 +222,7 @@ __global__ void cudaMoveBodiesByDT_NBody(float *d_pos, float *d_vel, float dT, f
 
 		float relevantDMMass = dmMassAtRadius(r, Mdm, Rdm);
 
-		float accFromDM = -((G * relevantDMMass) / pow(r, 2)) * (1 / kmPerPc);
+		float accFromDM = -((G * relevantDMMass) / (r * r)) * (1 / kmPerPc);
 
 		totalAcceleration.x += accFromDM * rUnit.x;
 		totalAcceleration.y += accFromDM * rUnit.y;
@@ -229,9 +230,9 @@ __global__ void cudaMoveBodiesByDT_NBody(float *d_pos, float *d_vel, float dT, f
 		
 		//	---
 
-		d_vel[globalId * 3] += totalAcceleration.x * (dT * 3.15569e13);
-		d_vel[globalId * 3 + 1] += totalAcceleration.y * (dT * 3.15569e13);
-		d_vel[globalId * 3 + 2] += totalAcceleration.z * (dT * 3.15569e13);
+		d_vel[globalId * 3] += totalAcceleration.x * (dT * secPerMYr);
+		d_vel[globalId * 3 + 1] += totalAcceleration.y * (dT * secPerMYr);
+		d_vel[globalId * 3 + 2] += totalAcceleration.z * (dT * secPerMYr);
 
 		d_pos[globalId * 3] = currentParticlePos.x;
 		d_pos[globalId * 3 + 1] = currentParticlePos.y;

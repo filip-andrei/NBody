@@ -32,7 +32,7 @@ const float POINT_SIZE = 1.0f;
 const float ZOOM = 15.0f;
 
 //	Sim Config
-const int NUM_PARTICLES = 524288;
+const int NUM_PARTICLES = 4000;
 
 const float Mtot = 96.9e10;					//	Total Mass of the galaxy, disk and dark halo (SM)
 const float Msf = 0.02;						//	Fraction of the total mass belonging to the galactic disk (regular matter)
@@ -144,8 +144,10 @@ void renderScene(){
 
 void timer(int flag) {
 	int drawStartTime = clock();
-    glutPostRedisplay();
+    
+	glutPostRedisplay();
 	moveBodiesByDT_NBody(posArray, velArray, dT, Mtot*Msf/NUM_PARTICLES, NUM_PARTICLES);//, Mtot*Msf, Rs, Mtot*(1.0f-Msf), Rdm);
+	
 	int drawEndTime = clock();
 
 	float delayToNextFrame =  (CLOCKS_PER_SEC/MAX_FPS) - (drawEndTime-drawStartTime);

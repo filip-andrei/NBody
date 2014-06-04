@@ -209,9 +209,13 @@ __global__ void cudaMoveBodiesByDT_NBody(float *d_pos, float *d_vel, float dT, f
 
 		//	Also add dark matter
 
-		d_vel[globalId * 3] += totalAcceleration.x;
-		d_vel[globalId * 3 + 1] += totalAcceleration.y;
-		d_vel[globalId * 3 + 2] += totalAcceleration.z;
+		d_vel[globalId * 3] += totalAcceleration.x * (dT * 3.15569e13);
+		d_vel[globalId * 3 + 1] += totalAcceleration.y * (dT * 3.15569e13);
+		d_vel[globalId * 3 + 2] += totalAcceleration.z * (dT * 3.15569e13);
+
+		d_pos[globalId * 3] = currentParticlePos.x;
+		d_pos[globalId * 3 + 1] = currentParticlePos.y;
+		d_pos[globalId * 3 + 2] = currentParticlePos.z;
 	}
 }
 

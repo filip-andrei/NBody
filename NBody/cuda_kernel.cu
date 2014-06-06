@@ -1,6 +1,7 @@
 #include "cuda_kernel.cuh"
 #include <cmath>
 #include <cuda.h>
+#include <cuda_runtime_api.h>
 #include <cuda_gl_interop.h>
 #include <curand.h>
 #include <device_launch_parameters.h>
@@ -91,7 +92,7 @@ __device__ float dmMassAtRadius(float r,
 								float Mdm,	//	Total dark matter mass in galaxy
 								float a)	//	Scale radius for Hernquist density profile
 {
-	return (Mdm * r * r) / pow(r + a, 2);
+	return (Mdm * r * r) / powf(r + a, 2);
 }
 
 //	Get mass of stars container in radius r
@@ -184,6 +185,8 @@ __global__ void cudaMoveBodiesByDT_NBody(float *d_pos, float *d_vel, float dT, f
 
 	int globalId = blockId * blockDim.x + threadId;
 
+	extern __shared__ float shmem[];
+
 	if(globalId < NUM_PARTICLES){
 
 		float3 currentParticlePos = make_float3(d_pos[globalId * 3], d_pos[globalId * 3 + 1], d_pos[globalId * 3 + 2]);
@@ -196,19 +199,30 @@ __global__ void cudaMoveBodiesByDT_NBody(float *d_pos, float *d_vel, float dT, f
 
 		//	Stellar gravitational influences
 		
-		for(int i = 0; i < NUM_PARTICLES; i++){
-			if(globalId != i){
-				float3 destParticlePos = make_float3(d_pos[i * 3], d_pos[i * 3 + 1], d_pos[i * 3 + 2]);
+		for(int stride = 0; stride < NUM_PARTICLES - blockDim.x; stride += blockDim.x){
+			__syncthreads();
 
-				float3 rVector = make_float3(currentParticlePos.x - destParticlePos.x, currentParticlePos.y - destParticlePos.y, currentParticlePos.z - destParticlePos.z);
-				float r = sqrt(rVector.x * rVector.x + rVector.y * rVector.y + rVector.z * rVector.z);
-				float3 rUnit = make_float3(rVector.x / r, rVector.y / r, rVector.z / r);
+			shmem[threadId * 3] = d_pos[(stride + threadId) * 3];
+			shmem[threadId * 3 + 1] = d_pos[(stride + threadId) * 3 + 1];
+			shmem[threadId * 3 + 2] = d_pos[(stride + threadId) * 3 + 2];
 
-				float acc = -((G * bodyMass) / (r*r)) * (1 / kmPerPc);
+			__syncthreads();
+			for(int i = 0; i < blockDim.x; i++){
+				if(globalId != (stride + i)){
+					float3 destParticlePos = make_float3(shmem[i * 3], shmem[i * 3 + 1], shmem[i * 3 + 2]);
 
-				totalAcceleration.x += acc * rUnit.x;
-				totalAcceleration.y += acc * rUnit.y;
-				totalAcceleration.z += acc * rUnit.z;
+					float3 rVector = make_float3(currentParticlePos.x - destParticlePos.x, currentParticlePos.y - destParticlePos.y, currentParticlePos.z - destParticlePos.z);
+					float r = sqrtf(rVector.x * rVector.x + rVector.y * rVector.y + rVector.z * rVector.z);
+					float3 rUnit = make_float3(rVector.x / r, rVector.y / r, rVector.z / r);
+
+					//float acc = -((G * bodyMass) / (r*r)) * (1 / kmPerPc);
+					float a = 0.7f;
+					float acc = -((G * bodyMass * r) / ( sqrtf(powf(r*r + a * a, 3)) )) * (1 / kmPerPc);
+
+					totalAcceleration.x += acc * rUnit.x;
+					totalAcceleration.y += acc * rUnit.y;
+					totalAcceleration.z += acc * rUnit.z;
+				}
 			}
 		}
 		
@@ -217,7 +231,7 @@ __global__ void cudaMoveBodiesByDT_NBody(float *d_pos, float *d_vel, float dT, f
 		//	Dark Matter Gravitational influence
 		
 		float3 rVector = currentParticlePos;
-		float r = sqrt(rVector.x * rVector.x + rVector.y * rVector.y + rVector.z * rVector.z);
+		float r = sqrtf(rVector.x * rVector.x + rVector.y * rVector.y + rVector.z * rVector.z);
 		float3 rUnit = make_float3(rVector.x / r, rVector.y / r, rVector.z / r);
 
 		float relevantDMMass = dmMassAtRadius(r, Mdm, Rdm);
@@ -303,7 +317,7 @@ void moveBodiesByDT_NBody(GLuint posVBO, GLuint velVBO, float dT, float bodyMass
 
 	int shmem = blockSize * 3 * sizeof(float);
 
-	cudaMoveBodiesByDT_NBody<<<blocks, blockSize>>>(d_pos, d_vel, dT, bodyMass, Mdm, Rdm, NUM_PARTICLES);
+	cudaMoveBodiesByDT_NBody<<<blocks, blockSize, shmem>>>(d_pos, d_vel, dT, bodyMass, Mdm, Rdm, NUM_PARTICLES);
 
 
 	cudaGLUnmapBufferObject(posVBO);

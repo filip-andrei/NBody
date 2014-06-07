@@ -8,6 +8,9 @@
 #include <glm\glm.hpp>
 #include <glm\gtx\transform.hpp>
 
+//	LodePNG for exporting frames
+#include "lodepng.h"
+
 //	Various
 #include <stdlib.h>
 #include <time.h>
@@ -31,12 +34,13 @@ const int MAX_HEIGHT = 800;
 const int MAX_FPS = 60;
 const float POINT_SIZE = 1.0f;
 const float ZOOM = 15.0f;
+const bool exportFrames = true;
 
 //	Sim Config
-const int NUM_PARTICLES = 256 * 90;
+const int NUM_PARTICLES = 256 * 420;
 
 const float Mtot = 96.9e10;							//	Total Mass of the galaxy, disk and dark halo (SM)
-const float Msf = 0.05;								//	Fraction of the total mass belonging to the galactic disk (regular matter)
+const float Msf = 0.09;								//	Fraction of the total mass belonging to the galactic disk (regular matter)
 
 const float MPart = (Mtot * Msf) / NUM_PARTICLES;	//	Mass per particle (SM)
 
@@ -56,6 +60,10 @@ POINT mouseLoc;
 
 unsigned int elapsedTime;
 
+//	Buffer for saving frame pixels
+unsigned char *frameBuffer;
+int frameCounter = 0;
+
 
 void initOpenGL(int *argc, char **argv){
 	glutInit(argc, argv);
@@ -68,6 +76,9 @@ void initOpenGL(int *argc, char **argv){
 }
 
 void init(){
+	if(exportFrames){
+		frameBuffer = (unsigned char *)malloc(3 * sizeof(unsigned char) * MAX_WIDTH * MAX_HEIGHT);
+	}
 
 	viewData.thetaX = 0.0f;
 	viewData.thetaY = 0.0f;
@@ -149,12 +160,30 @@ void renderScene(){
 	glutSwapBuffers();
 }
 
+void exportFrame(){
+	char filename[1024];
+	sprintf(filename, "D:\\Temp\\Frames\\107k-Msf0.09-SPa0.01-%05d.png", frameCounter++);
+	
+	glReadPixels(0, 0, MAX_WIDTH, MAX_HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, frameBuffer);
+	
+	printf("Saving frame to %s\n", filename);
+	unsigned int error = lodepng_encode24_file(filename, frameBuffer, MAX_WIDTH, MAX_HEIGHT);
+
+	if(error){
+		printf("error occurred on frame export %u: %s\n", error, lodepng_error_text(error));
+	}
+}
+
 void timer(int flag) {
     
 	glutPostRedisplay();
 	moveBodiesByDT_NBody(posArray, velArray, dT, MPart, Mtot * (1.0f - Msf), Rdm, NUM_PARTICLES);
 	//moveBodiesByDT_staticPotential(posArray, velArray, dT, MPart, NUM_PARTICLES, Mtot*Msf, Rs, Mtot*(1.0f-Msf), Rdm);
-	
+
+	if(exportFrames){
+		exportFrame();
+	}
+
 	int newElapsedTime = glutGet(GLUT_ELAPSED_TIME);
 
 	char title[512];
@@ -163,8 +192,8 @@ void timer(int flag) {
 	glutSetWindowTitle(title);
 
 	float delayToNextFrame =  (CLOCKS_PER_SEC/MAX_FPS) - (newElapsedTime-elapsedTime);
-    delayToNextFrame = floor(delayToNextFrame+0.5);
-    delayToNextFrame < 0 ? delayToNextFrame = 0 : NULL;
+	delayToNextFrame = floor(delayToNextFrame+0.5);
+	delayToNextFrame < 0 ? delayToNextFrame = 0 : NULL;
 
 	glutTimerFunc(delayToNextFrame, timer, 0);
 }
@@ -191,6 +220,21 @@ void mouseMove(int x, int y){
 	mouseLoc.x = x;
 	mouseLoc.y = y;
 }
+
+//void cleanup(){
+//	printf("Doing cleanup\n");
+//
+//	
+//	glDeleteBuffers(1, &posArray);
+//	glDeleteBuffers(1, &velArray);
+//
+//
+//	glDeleteProgram(programID);
+//
+//	if(exportFrames){
+//		free(frameBuffer);
+//	}
+//}
 
 int main(int argc, char **argv){
 	

@@ -5,6 +5,9 @@
     <ClCompile Include="shader.cpp">
       <Filter>Shader</Filter>
     </ClCompile>
+    <ClCompile Include="lodepng.cpp">
+      <Filter>LodePNG</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cuda_kernel.cuh">
@@ -12,6 +15,9 @@
     </ClInclude>
     <ClInclude Include="shader.h">
       <Filter>Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="lodepng.h">
+      <Filter>LodePNG</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -28,6 +34,9 @@
     </Filter>
     <Filter Include="Shader">
       <UniqueIdentifier>{3b432767-5141-475a-b356-f44f97a26413}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LodePNG">
+      <UniqueIdentifier>{89215eb3-24dd-463d-b91c-7b7040586481}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

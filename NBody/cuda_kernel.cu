@@ -216,7 +216,7 @@ __global__ void cudaMoveBodiesByDT_NBody(float *d_pos, float *d_vel, float dT, f
 					float3 rUnit = make_float3(rVector.x / r, rVector.y / r, rVector.z / r);
 
 					//float acc = -((G * bodyMass) / (r*r)) * (1 / kmPerPc);
-					float a = 0.7f;
+					float a = 0.01f;
 					float acc = -((G * bodyMass * r) / ( sqrtf(powf(r*r + a * a, 3)) )) * (1 / kmPerPc);
 
 					totalAcceleration.x += acc * rUnit.x;

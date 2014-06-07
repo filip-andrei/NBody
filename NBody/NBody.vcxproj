@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="lodepng.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="shader.cpp" />
   </ItemGroup>
@@ -20,6 +21,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cuda_kernel.cuh" />
+    <ClInclude Include="lodepng.h" />
     <ClInclude Include="shader.h" />
   </ItemGroup>
   <ItemGroup>

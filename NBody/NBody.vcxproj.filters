@@ -19,6 +19,15 @@
     <ClInclude Include="lodepng.h">
       <Filter>LodePNG</Filter>
     </ClInclude>
+    <ClInclude Include="INbodyResolver.h">
+      <Filter>Resolver\Intf</Filter>
+    </ClInclude>
+    <ClInclude Include="CudaAllPairsStaticResolver.cuh">
+      <Filter>Resolver\Impl\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="constants.cuh">
+      <Filter>Resolver</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="fragmentShader.glsl">
@@ -38,10 +47,28 @@
     <Filter Include="LodePNG">
       <UniqueIdentifier>{89215eb3-24dd-463d-b91c-7b7040586481}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resolver">
+      <UniqueIdentifier>{7984e96e-7628-4da5-be8f-df24cf2ca755}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resolver\Impl">
+      <UniqueIdentifier>{6587d064-9426-47d0-9a27-82952b87057b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resolver\Intf">
+      <UniqueIdentifier>{72cfa99b-ec51-4dec-8add-827d07024947}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resolver\Impl\Header">
+      <UniqueIdentifier>{6910fe23-83a7-4469-b9ed-9ce7cc7b8254}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resolver\Impl\Source">
+      <UniqueIdentifier>{0ac4cdbe-f44f-481b-ace5-611f4fa91345}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="cuda_kernel.cu">
       <Filter>CUDA</Filter>
+    </CudaCompile>
+    <CudaCompile Include="CudaAllPairsStaticResolver.cu">
+      <Filter>Resolver\Impl\Source</Filter>
     </CudaCompile>
   </ItemGroup>
 </Project>

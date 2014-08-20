@@ -11,6 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <CudaCompile Include="CudaAllPairsStaticResolver.cu">
+      <FileType>CppCode</FileType>
+    </CudaCompile>
     <ClCompile Include="lodepng.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="shader.cpp" />
@@ -20,7 +23,10 @@
     <None Include="vertexShader.glsl" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="constants.cuh" />
+    <ClInclude Include="CudaAllPairsStaticResolver.cuh" />
     <ClInclude Include="cuda_kernel.cuh" />
+    <ClInclude Include="INbodyResolver.h" />
     <ClInclude Include="lodepng.h" />
     <ClInclude Include="shader.h" />
   </ItemGroup>
@@ -100,6 +106,18 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
       <Command>echo copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"
 copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
+    <CudaCompile>
+      <CInterleavedPTX>true</CInterleavedPTX>
+    </CudaCompile>
+    <CudaCompile>
+      <CodeGeneration>compute_30,sm_30</CodeGeneration>
+    </CudaCompile>
+    <CudaCompile>
+      <GPUDebugInfo>true</GPUDebugInfo>
+    </CudaCompile>
+    <CudaCompile>
+      <PtxAsOptionV>true</PtxAsOptionV>
+    </CudaCompile>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -17,7 +17,9 @@
 #include <vector>
 
 #include "shader.h"
-#include "cuda_kernel.cuh"
+//#include "cuda_kernel.cuh"
+
+#include "CudaAllPairsStaticResolver.cuh"
 
 //	Perspective stuff
 struct ViewData{
@@ -29,25 +31,15 @@ struct ViewData{
 
 //	Window Config
 const char *WINDOW_TITLE = "N-Body Window";
-const int MAX_WIDTH = 800;
-const int MAX_HEIGHT = 800;
+const int MAX_WIDTH = 1280;
+const int MAX_HEIGHT = 720;
 const int MAX_FPS = 60;
 const float POINT_SIZE = 1.0f;
 const float ZOOM = 15.0f;
-const bool exportFrames = true;
+const bool exportFrames = false;
 
 //	Sim Config
-const int NUM_PARTICLES = 256 * 420;
-
-const float Mtot = 96.9e10;							//	Total Mass of the galaxy, disk and dark halo (SM)
-const float Msf = 0.09;								//	Fraction of the total mass belonging to the galactic disk (regular matter)
-
-const float MPart = (Mtot * Msf) / NUM_PARTICLES;	//	Mass per particle (SM)
-
-const float Rs = 3160.0f;							//	Scale radius for stellar density distribution (Pcs)
-const float Rdm = Rs * 2;							//	Scale radius for dark matter density distribution (Pcs)
-
-const float dT = 0.1f;								//	Time increment in each simulation step (Myr)
+const int NUM_PARTICLES = 256 * 4300;
 
 
 //	Various
@@ -63,6 +55,21 @@ unsigned int elapsedTime;
 //	Buffer for saving frame pixels
 unsigned char *frameBuffer;
 int frameCounter = 0;
+
+
+
+
+
+
+
+
+
+
+INbodyResolver *resolver;
+
+
+
+
 
 
 void initOpenGL(int *argc, char **argv){
@@ -100,8 +107,9 @@ void init(){
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * NUM_PARTICLES, 0, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+
 	
-	genBodies(posArray, velArray, NUM_PARTICLES, Mtot * Msf, Rs, Mtot * (1.0f - Msf), Rdm);
+	//genBodies(posArray, velArray, NUM_PARTICLES, Mtot * Msf, Rs, Mtot * (1.0f - Msf), Rdm);
 	
 	
 	glm::mat4 model = glm::scale(glm::vec3(1.0));
@@ -162,7 +170,7 @@ void renderScene(){
 
 void exportFrame(){
 	char filename[1024];
-	sprintf(filename, "D:\\Temp\\Frames\\107k-Msf0.09-SPa0.01-%05d.png", frameCounter++);
+	sprintf(filename, "D:\\Temp\\Frames\\110k-Msf0.14-SPa0.6-%05d.png", frameCounter++);
 	
 	glReadPixels(0, 0, MAX_WIDTH, MAX_HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, frameBuffer);
 	
@@ -177,8 +185,10 @@ void exportFrame(){
 void timer(int flag) {
     
 	glutPostRedisplay();
-	moveBodiesByDT_NBody(posArray, velArray, dT, MPart, Mtot * (1.0f - Msf), Rdm, NUM_PARTICLES);
+	//moveBodiesByDT_NBody(posArray, velArray, dT, MPart, Mtot * (1.0f - Msf), Rdm, NUM_PARTICLES);
 	//moveBodiesByDT_staticPotential(posArray, velArray, dT, MPart, NUM_PARTICLES, Mtot*Msf, Rs, Mtot*(1.0f-Msf), Rdm);
+
+	resolver->advanceTimeStep();
 
 	if(exportFrames){
 		exportFrame();
@@ -242,13 +252,19 @@ int main(int argc, char **argv){
 	initOpenGL(&argc, argv);
 	init();
 
+
+	resolver = new CudaAllPairsStaticResolver();
+	resolver->loadSimConfig();
+	resolver->setPosBufferID(posArray);
+	resolver->initialize();
+
+
 	//	Register callback functions
 	glutDisplayFunc(renderScene);
 	glutMouseFunc(mouseBtnDown);
 	glutMotionFunc(mouseMove);
 	glutTimerFunc(30, timer, 0);
 	glutMainLoop();
-
 
 	return 1;
 }

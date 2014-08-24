@@ -2,31 +2,31 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="shader.cpp">
-      <Filter>Shader</Filter>
-    </ClCompile>
     <ClCompile Include="lodepng.cpp">
       <Filter>LodePNG</Filter>
+    </ClCompile>
+    <ClCompile Include="NBodyGLViewer.cpp">
+      <Filter>Viewer\Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cuda_kernel.cuh">
       <Filter>CUDA</Filter>
     </ClInclude>
-    <ClInclude Include="shader.h">
-      <Filter>Shader</Filter>
-    </ClInclude>
     <ClInclude Include="lodepng.h">
       <Filter>LodePNG</Filter>
     </ClInclude>
-    <ClInclude Include="INbodyResolver.h">
-      <Filter>Resolver\Intf</Filter>
-    </ClInclude>
-    <ClInclude Include="CudaAllPairsStaticResolver.cuh">
-      <Filter>Resolver\Impl\Header</Filter>
-    </ClInclude>
     <ClInclude Include="constants.cuh">
       <Filter>Resolver</Filter>
+    </ClInclude>
+    <ClInclude Include="NBodyGLViewer.h">
+      <Filter>Viewer\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="AbstractResolver.h">
+      <Filter>Resolver\Intf</Filter>
+    </ClInclude>
+    <ClInclude Include="CudaStaticResolver.cuh">
+      <Filter>Resolver\Impl\Header</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -62,12 +62,21 @@
     <Filter Include="Resolver\Impl\Source">
       <UniqueIdentifier>{0ac4cdbe-f44f-481b-ace5-611f4fa91345}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Viewer">
+      <UniqueIdentifier>{8be751e2-0f7d-4529-b705-5bbac5be0158}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Viewer\Header">
+      <UniqueIdentifier>{964ef7b2-eda5-4774-be54-7730f99365bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Viewer\Source">
+      <UniqueIdentifier>{53b375d9-2166-4ece-b9d3-61e83ff429a3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="cuda_kernel.cu">
       <Filter>CUDA</Filter>
     </CudaCompile>
-    <CudaCompile Include="CudaAllPairsStaticResolver.cu">
+    <CudaCompile Include="CudaStaticResolver.cu">
       <Filter>Resolver\Impl\Source</Filter>
     </CudaCompile>
   </ItemGroup>

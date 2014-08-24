@@ -1,4 +1,4 @@
-#include "CudaAllPairsStaticResolver.cuh"
+#include "CudaStaticResolver.cuh"
 
 #include "constants.cuh"
 #include "cuda_kernel.cuh"
@@ -202,7 +202,7 @@ __global__ void cudaMoveBodiesByDT_staticPotential(float *d_pos,
 }
 
 
-CudaAllPairsStaticResolver::CudaAllPairsStaticResolver(void)
+CudaStaticResolver::CudaStaticResolver(void)
 {
 	NUM_PARTICLES = -1;
 
@@ -223,9 +223,9 @@ CudaAllPairsStaticResolver::CudaAllPairsStaticResolver(void)
 }
 
 
-void CudaAllPairsStaticResolver::loadSimConfig(){
+void CudaStaticResolver::loadSimConfig(){
 
-	NUM_PARTICLES = 256 * 4300;
+	NUM_PARTICLES = 256 * 430;
 
 	Mtot = 96.9e10f;
 	Msf = 0.14f;
@@ -243,11 +243,11 @@ void CudaAllPairsStaticResolver::loadSimConfig(){
 	threadsPerBlock = 256;
 }
 
-void CudaAllPairsStaticResolver::setPosBufferID(GLuint vboID){
+void CudaStaticResolver::setPosBufferID(GLuint vboID){
 	posVboID = vboID;
 }
 
-void CudaAllPairsStaticResolver::initialize(){
+void CudaStaticResolver::initialize(){
 
 	//	Map the OpenGL VBO containing particle positions to a cuda pointer
 	cudaGLRegisterBufferObject(posVboID);
@@ -277,7 +277,7 @@ void CudaAllPairsStaticResolver::initialize(){
 	cudaGLUnmapBufferObject(posVboID);
 }
 
-void CudaAllPairsStaticResolver::advanceTimeStep() {
+void CudaStaticResolver::advanceTimeStep() {
 	cudaGLRegisterBufferObject(posVboID);
 	cudaGLMapBufferObject( (void **)&d_positions, posVboID);
 
@@ -289,7 +289,7 @@ void CudaAllPairsStaticResolver::advanceTimeStep() {
 }
 
 
-CudaAllPairsStaticResolver::~CudaAllPairsStaticResolver(void){
+CudaStaticResolver::~CudaStaticResolver(void){
 	cudaFree(d_positions);
 	cudaFree(d_velocities);
 	cudaFree(d_masses);

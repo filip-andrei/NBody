@@ -11,12 +11,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="CudaAllPairsStaticResolver.cu">
+    <CudaCompile Include="CudaStaticResolver.cu">
       <FileType>CppCode</FileType>
     </CudaCompile>
     <ClCompile Include="lodepng.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="shader.cpp" />
+    <ClCompile Include="NBodyGLViewer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="fragmentShader.glsl" />
@@ -24,11 +24,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="constants.cuh" />
-    <ClInclude Include="CudaAllPairsStaticResolver.cuh" />
+    <ClInclude Include="CudaStaticResolver.cuh" />
     <ClInclude Include="cuda_kernel.cuh" />
-    <ClInclude Include="INbodyResolver.h" />
+    <ClInclude Include="AbstractResolver.h" />
     <ClInclude Include="lodepng.h" />
-    <ClInclude Include="shader.h" />
+    <ClInclude Include="NBodyGLViewer.h" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="cuda_kernel.cu" />

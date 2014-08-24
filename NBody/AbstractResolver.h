@@ -2,7 +2,7 @@
 
 #include <GL\glew.h>
 
-class INbodyResolver
+class AbstractResolver
 {
 public:
 
@@ -13,6 +13,6 @@ public:
 
 	virtual void initialize()=0;
 
-	virtual ~INbodyResolver(void){ };
+	virtual ~AbstractResolver(void){ };
 };
 

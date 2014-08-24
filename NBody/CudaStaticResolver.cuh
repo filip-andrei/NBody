@@ -1,9 +1,9 @@
 #pragma once
-#include "INbodyResolver.h"
+#include "AbstractResolver.h"
 
 
-class CudaAllPairsStaticResolver :
-	public INbodyResolver
+class CudaStaticResolver :
+	public AbstractResolver
 {
 private:
 
@@ -51,7 +51,7 @@ private:
 	int threadsPerBlock;
 
 public:
-	CudaAllPairsStaticResolver(void);
+	CudaStaticResolver(void);
 
 	void advanceTimeStep() override;
 
@@ -61,6 +61,6 @@ public:
 
 	void initialize() override;
 
-	~CudaAllPairsStaticResolver(void);
+	~CudaStaticResolver(void);
 };
 

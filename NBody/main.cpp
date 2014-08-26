@@ -4,6 +4,7 @@
 #include <yaml-cpp\yaml.h>
 #include <iostream>
 
+
 #ifdef _DEBUG
 #pragma comment(lib, "libyaml-cppmdd.lib")
 #else
@@ -38,7 +39,7 @@ int main(int argc, char **argv){
 		}
 
 		char modulePath[1024];
-		sprintf_s(modulePath, 1024, "%s.dll", moduleName);
+		sprintf_s(modulePath, 1024, "%s.dll", moduleName.c_str());
 
 		cout<<"Using module "<<modulePath<<endl<<endl;
 
@@ -61,7 +62,6 @@ int main(int argc, char **argv){
 		
 		AbstractResolver *resolver = buildResolver();
 
-
 		NBodyGLViewer &viewer = NBodyGLViewer::getInstance();
 
 
@@ -75,13 +75,15 @@ int main(int argc, char **argv){
 
 		viewer.start();
 
+
+		FreeLibrary(module);
 	}catch(YAML::Exception &e){
 		cout<<e.what()<<endl;
 		system("PAUSE");
 		return 1;
 	}
 
-
+	cout<<"Finished execution"<<endl;
 	system("PAUSE");
-	return 1;
+	return 0;
 }

@@ -10,53 +10,27 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="lodepng.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="NBodyGLViewer.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="config.yaml" />
-    <None Include="fragmentShader.glsl" />
-    <None Include="vertexShader.glsl" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="cuda_kernel.cuh" />
-    <ClInclude Include="lodepng.h" />
-    <ClInclude Include="NBodyGLViewer.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="cuda_kernel.cu">
-      <FileType>Document</FileType>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\AbstractResolver\AbstractResolver.vcxproj">
-      <Project>{b364cd3f-dfde-40e0-988d-172c8c2d9974}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{9E495321-9BD4-42DC-ABAF-04E5A7D39FEF}</ProjectGuid>
-    <RootNamespace>glut_cuda_test_area</RootNamespace>
-    <ProjectName>NBody</ProjectName>
+    <ProjectGuid>{016EA018-D3CD-482F-9976-891383FEEC3D}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>NBody</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>v110</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 5.5.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -67,62 +41,68 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(FREEGLUT_HOME)\inc;$(GLEW_HOME)\include;$(GLM_HOME);$(YAML_HOME)\include;$(BOOST_ROOT);$(IncludePath)</IncludePath>
-    <LibraryPath>$(GLEW_HOME)\lib\Release\Win32;$(FREEGLUT_HOME)\lib;$(YAML_HOME)\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(FREEGLUT_HOME)\inc;$(GLEW_HOME)\include;$(GLM_HOME);$(YAML_HOME)\include;$(BOOST_ROOT);$(IncludePath);$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSDK_IncludePath);</IncludePath>
+    <LibraryPath>$(GLEW_HOME)\lib\Release\Win32;$(FREEGLUT_HOME)\lib;$(YAML_HOME)\lib;$(LibraryPath);$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(FREEGLUT_HOME)\inc;$(GLEW_HOME)\include;$(GLM_HOME);$(YAML_HOME)\include;$(BOOST_ROOT);$(IncludePath)</IncludePath>
-    <LibraryPath>$(GLEW_HOME)\lib\Release\Win32;$(FREEGLUT_HOME)\lib;$(YAML_HOME)\lib;$(LibraryPath)</LibraryPath>
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(FREEGLUT_HOME)\inc;$(GLEW_HOME)\include;$(GLM_HOME);$(YAML_HOME)\include;$(BOOST_ROOT);$(IncludePath);$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSDK_IncludePath);</IncludePath>
+    <LibraryPath>$(GLEW_HOME)\lib\Release\Win32;$(FREEGLUT_HOME)\lib;$(YAML_HOME)\lib;$(LibraryPath);$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>cudart.lib;curand.lib;freeglut.lib;glew32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>freeglut.lib;glew32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <PostBuildEvent>
-      <Command>echo copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"
-copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>cudart.lib;curand.lib;freeglut.lib;glew32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freeglut.lib;glew32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <PostBuildEvent>
-      <Command>echo copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"
-copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
-    </PostBuildEvent>
-    <CudaCompile>
-      <CInterleavedPTX>true</CInterleavedPTX>
-    </CudaCompile>
-    <CudaCompile>
-      <CodeGeneration>compute_30,sm_30</CodeGeneration>
-    </CudaCompile>
-    <CudaCompile>
-      <GPUDebugInfo>true</GPUDebugInfo>
-    </CudaCompile>
-    <CudaCompile>
-      <PtxAsOptionV>true</PtxAsOptionV>
-    </CudaCompile>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="config.yaml" />
+    <None Include="cuda_kernel.cu" />
+    <None Include="cuda_kernel.cuh" />
+    <None Include="fragmentShader.glsl" />
+    <None Include="vertexShader.glsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="lodepng.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="NBodyGLViewer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="lodepng.h" />
+    <ClInclude Include="NBodyGLViewer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AbstractResolver\AbstractResolver.vcxproj">
+      <Project>{b364cd3f-dfde-40e0-988d-172c8c2d9974}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 5.5.targets" />
   </ImportGroup>
 </Project>

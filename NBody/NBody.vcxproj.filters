@@ -1,55 +1,60 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <None Include="fragmentShader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="vertexShader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="cuda_kernel.cu">
+      <Filter>Temp</Filter>
+    </None>
+    <None Include="cuda_kernel.cuh">
+      <Filter>Temp</Filter>
+    </None>
+    <None Include="config.yaml">
+      <Filter>Config</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="lodepng.cpp">
-      <Filter>LodePNG</Filter>
-    </ClCompile>
     <ClCompile Include="NBodyGLViewer.cpp">
       <Filter>Viewer\Source</Filter>
     </ClCompile>
+    <ClCompile Include="lodepng.cpp">
+      <Filter>LodePNG</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="lodepng.h">
-      <Filter>LodePNG</Filter>
-    </ClInclude>
     <ClInclude Include="NBodyGLViewer.h">
       <Filter>Viewer\Header</Filter>
     </ClInclude>
+    <ClInclude Include="lodepng.h">
+      <Filter>LodePNG</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="fragmentShader.glsl">
-      <Filter>Shader</Filter>
-    </None>
-    <None Include="vertexShader.glsl">
-      <Filter>Shader</Filter>
-    </None>
-    <None Include="config.yaml" />
-    <None Include="cuda_kernel.cu">
-      <Filter>CUDA</Filter>
-    </None>
-    <None Include="cuda_kernel.cuh">
-      <Filter>CUDA</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Filter Include="CUDA">
-      <UniqueIdentifier>{f902cf47-427f-44e2-ab21-93745ca127e7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shader">
-      <UniqueIdentifier>{3b432767-5141-475a-b356-f44f97a26413}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="LodePNG">
-      <UniqueIdentifier>{89215eb3-24dd-463d-b91c-7b7040586481}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Viewer">
-      <UniqueIdentifier>{8be751e2-0f7d-4529-b705-5bbac5be0158}</UniqueIdentifier>
+      <UniqueIdentifier>{6bca4106-59d9-47f9-9d39-1bd26b16a899}</UniqueIdentifier>
     </Filter>
     <Filter Include="Viewer\Header">
-      <UniqueIdentifier>{964ef7b2-eda5-4774-be54-7730f99365bb}</UniqueIdentifier>
+      <UniqueIdentifier>{9572aa60-3f8d-46dd-8e27-e27071ab5959}</UniqueIdentifier>
     </Filter>
     <Filter Include="Viewer\Source">
-      <UniqueIdentifier>{53b375d9-2166-4ece-b9d3-61e83ff429a3}</UniqueIdentifier>
+      <UniqueIdentifier>{f9293605-c88a-4713-afe9-b7ff98cb2983}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LodePNG">
+      <UniqueIdentifier>{a1b8a7f4-fc55-496c-bc45-c827adcbc468}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{ab519237-ccd8-4919-b1bc-9e9b8d4a0e58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Temp">
+      <UniqueIdentifier>{246c06e3-6b0e-4d58-81da-c3f668c9db63}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Config">
+      <UniqueIdentifier>{eea7d142-4cc8-4caa-921d-5f824c21caad}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

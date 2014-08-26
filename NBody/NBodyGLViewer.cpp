@@ -22,6 +22,9 @@ void NBodyGLViewer::initGL(int *argc, char **argv){
 	glutInitWindowSize(MAX_WIDTH, MAX_HEIGHT);
 	glutCreateWindow(WINDOW_TITLE);
 
+	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
+
+
 	glewInit();
 }
 
@@ -208,12 +211,23 @@ void timer(int flag) {
 	glutTimerFunc(delayToNextFrame, timer, 0);
 }
 
+void keyFunc(unsigned char key, int x, int y){
+	switch(key){
+	case 27:
+		glutLeaveMainLoop();
+		break;
+	default:
+		break;
+	}
+}
+
 void NBodyGLViewer::registerCallbacks(){
 
 	glutDisplayFunc(render);
 	glutReshapeFunc(windowResize);
 	glutMouseFunc(mouseBtnDown);
 	glutMotionFunc(mouseMove);
+	glutKeyboardFunc(keyFunc);
 	glutTimerFunc(30, timer, 0);
 }
 
@@ -340,11 +354,14 @@ bool NBodyGLViewer::init(int *argc, char **argv, AbstractResolver *resolver, YAM
 
 void NBodyGLViewer::start(){
 	glutMainLoop();
+	
+	//	Should only reach this part when application closes
+	delete resolver;
 }
 
 NBodyGLViewer::~NBodyGLViewer(void)
 {
-	delete resolver;
+	
 	delete[] WINDOW_TITLE;
 
 	/*glDeleteBuffers(1, &posArray);

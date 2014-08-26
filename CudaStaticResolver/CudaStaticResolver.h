@@ -1,5 +1,5 @@
 #pragma once
-#include "AbstractResolver.h"
+#include "..\AbstractResolver\AbstractResolver.h"
 
 
 class CudaStaticResolver :

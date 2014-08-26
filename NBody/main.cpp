@@ -1,4 +1,4 @@
-#include "CudaStaticResolver.h"
+#include "..\AbstractResolver\AbstractResolver.h"
 #include "NBodyGLViewer.h"
 
 #include <yaml-cpp\yaml.h>
@@ -14,6 +14,8 @@
 
 using namespace std;
 
+typedef AbstractResolver *(CALLBACK *buildResolverFunc)();
+
 int main(int argc, char **argv){
 
 	if(argc < 2){
@@ -25,11 +27,44 @@ int main(int argc, char **argv){
 	try{
 		YAML::Node root = YAML::LoadFile(argv[1]);
 
-		string module = root["Resolver"].as<string>();
-		cout<<"Using module "<<module<<".dll"<<endl<<endl;
+		string moduleName;
+		if(root["Resolver"]){
+			moduleName = root["Resolver"].as<string>();
+		}
+		else{
+			cout<<"No Resolver specified in config"<<endl;
+			system("PAUSE");
+			return 1;
+		}
+
+		char modulePath[1024];
+		sprintf_s(modulePath, 1024, "%s.dll", moduleName);
+
+		cout<<"Using module "<<modulePath<<endl<<endl;
+
+		HINSTANCE module = LoadLibrary(modulePath);
+
+		if(!module){
+			cout<<"Could not find module "<<modulePath<<endl;
+			system("PAUSE");
+			return 1;
+		}
+
+		buildResolverFunc buildResolver = (buildResolverFunc)GetProcAddress(module, "buildResolver");
+
+		if(!buildResolver){
+			cout<<"Could not get buildResolver() from module"<<endl;
+			system("PAUSE");
+			return 1;
+		}
+
+		
+		AbstractResolver *resolver = buildResolver();
+
 
 		NBodyGLViewer &viewer = NBodyGLViewer::getInstance();
-		CudaStaticResolver *resolver = new CudaStaticResolver();
+
+
 
 		YAML::Node &config = root["NBodyConfig"];
 		if(!viewer.init(&argc, argv, resolver, config)){

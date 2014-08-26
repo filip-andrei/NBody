@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AbstractResolver.h"
+#include "..\AbstractResolver\AbstractResolver.h"
 
 #include <GL\wglew.h>
 #include <GL\freeglut.h>

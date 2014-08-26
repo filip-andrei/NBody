@@ -1,7 +1,7 @@
 Resolver: CudaStaticResolver
 
 NBodyConfig:
-    NumParticles: 1100800
+    NumParticles: 110080
 
     ResolverSettings:
         Mtot: 96.9e10

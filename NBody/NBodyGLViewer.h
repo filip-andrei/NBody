@@ -6,6 +6,8 @@
 #include <GL\freeglut.h>
 #include <glm\glm.hpp>
 
+#include <yaml-cpp\yaml.h>
+
 #include <string>
 
 struct ViewData{
@@ -19,7 +21,7 @@ class NBodyGLViewer
 private:
 
 	//	Window Config
-	const char *WINDOW_TITLE;
+	char *WINDOW_TITLE;
 	int MAX_WIDTH;
 	int MAX_HEIGHT;
 	int MAX_FPS;
@@ -74,7 +76,7 @@ public:
 		return instance;
 	}
 
-	void init(int *argc, char **argv, AbstractResolver *resolver);
+	bool init(int *argc, char **argv, AbstractResolver *resolver, YAML::Node &config);
 	void start();
 
 	~NBodyGLViewer(void);

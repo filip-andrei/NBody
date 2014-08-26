@@ -13,6 +13,8 @@
 #include <time.h>
 
 
+using namespace std;
+
 void NBodyGLViewer::initGL(int *argc, char **argv){
 	glutInit(argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
@@ -233,21 +235,67 @@ void NBodyGLViewer::exportFrame(){
 
 
 
-void NBodyGLViewer::init(int *argc, char **argv, AbstractResolver *resolver){
+bool NBodyGLViewer::init(int *argc, char **argv, AbstractResolver *resolver, YAML::Node &config){
 	this->resolver = resolver;
+	try{
+		//	Sim Config
+		if(config["NumParticles"]){
+			NUM_PARTICLES = config["NumParticles"].as<int>();
+		}else{
+			cout<<"Need NumParticles"<<endl;
+		}
 
-	//	Window Config
-	WINDOW_TITLE = "N-Body Window";
-	MAX_WIDTH = 1280;
-	MAX_HEIGHT = 720;
-	MAX_FPS = 60;
-	POINT_SIZE = 1.0f;
-	ZOOM = 15.0f;
-	exportFrames = false;
+		YAML::Node &viewerConfig = config["ViewerSettings"];
+		//	Viewer Config
+		if(viewerConfig["WindowTitle"]){
+			const string &title = viewerConfig["WindowTitle"].as<string>();
+			WINDOW_TITLE = new char[title.size() + 1];
+			memset(WINDOW_TITLE, 0x00, (title.size() + 1) * sizeof(char));
+			strncpy(WINDOW_TITLE, title.c_str(), title.size());
+				
+		}else{
+			WINDOW_TITLE = "N-Body Window";
+		}
+	
+		if(viewerConfig["WindowWidth"]){
+			MAX_WIDTH = viewerConfig["WindowWidth"].as<int>();
+		}else{
+			MAX_WIDTH = 1280;
+		}
+		
+		if(viewerConfig["WindowHeight"]){
+			MAX_HEIGHT = viewerConfig["WindowHeight"].as<int>();
+		}else{
+			MAX_HEIGHT = 720;
+		}
+		
+		if(viewerConfig["MaxFPS"]){
+			MAX_FPS = viewerConfig["MaxFPS"].as<int>();
+		}else{
+			MAX_FPS = 60;
+		}
+		
+		if(viewerConfig["InitialZoom"]){
+			ZOOM = viewerConfig["InitialZoom"].as<float>();
+		}else{
+			ZOOM = 1.0f;
+		}
+		
+		if(viewerConfig["ExportFrames"]){
+			exportFrames = viewerConfig["ExportFrames"].as<bool>();
+		}else{
+			exportFrames = false;
+		}
 
-	//	Sim Config
-	NUM_PARTICLES = 256 * 430;
-
+		if(viewerConfig["ParticleSize"]){
+			POINT_SIZE = viewerConfig["ParticleSize"].as<float>();
+		}else{
+			POINT_SIZE = 1.0f;
+		}		
+	}catch(YAML::Exception &e){
+		cout<<e.what()<<endl;
+		return false;
+	}
 
 	initGL(argc, argv);
 
@@ -279,13 +327,15 @@ void NBodyGLViewer::init(int *argc, char **argv, AbstractResolver *resolver){
 	matrixID = glGetUniformLocation(shaderProgramID, "MVP");
 
 
-	resolver->loadSimConfig();
 	resolver->setPosBufferID(posArray);
-	resolver->initialize();
+	if(!resolver->initialize(config)){
+		return false;
+	}
 
 	registerCallbacks();
 
 	elapsedTime = glutGet(GLUT_ELAPSED_TIME);
+	return true;
 }
 
 void NBodyGLViewer::start(){
@@ -294,4 +344,9 @@ void NBodyGLViewer::start(){
 
 NBodyGLViewer::~NBodyGLViewer(void)
 {
+	delete resolver;
+	delete[] WINDOW_TITLE;
+
+	/*glDeleteBuffers(1, &posArray);
+	glDeleteProgram(shaderProgramID);*/
 }

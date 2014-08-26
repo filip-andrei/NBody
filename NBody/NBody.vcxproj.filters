@@ -25,6 +25,9 @@
     <ClInclude Include="AbstractResolver.h">
       <Filter>Resolver\Intf</Filter>
     </ClInclude>
+    <ClInclude Include="CudaStaticResolver.h">
+      <Filter>Resolver\Impl\Header</Filter>
+    </ClInclude>
     <ClInclude Include="CudaStaticResolver.cuh">
       <Filter>Resolver\Impl\Header</Filter>
     </ClInclude>
@@ -36,6 +39,7 @@
     <None Include="vertexShader.glsl">
       <Filter>Shader</Filter>
     </None>
+    <None Include="config.yaml" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CUDA">
@@ -77,6 +81,9 @@
       <Filter>CUDA</Filter>
     </CudaCompile>
     <CudaCompile Include="CudaStaticResolver.cu">
+      <Filter>Resolver\Impl\Source</Filter>
+    </CudaCompile>
+    <CudaCompile Include="CudaStaticResolver.cpp">
       <Filter>Resolver\Impl\Source</Filter>
     </CudaCompile>
   </ItemGroup>

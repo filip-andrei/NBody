@@ -11,26 +11,27 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="CudaStaticResolver.cu">
-      <FileType>CppCode</FileType>
-    </CudaCompile>
+    <CudaCompile Include="CudaStaticResolver.cpp" />
     <ClCompile Include="lodepng.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="NBodyGLViewer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="config.yaml" />
     <None Include="fragmentShader.glsl" />
     <None Include="vertexShader.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="constants.cuh" />
     <ClInclude Include="CudaStaticResolver.cuh" />
+    <ClInclude Include="CudaStaticResolver.h" />
     <ClInclude Include="cuda_kernel.cuh" />
     <ClInclude Include="AbstractResolver.h" />
     <ClInclude Include="lodepng.h" />
     <ClInclude Include="NBodyGLViewer.h" />
   </ItemGroup>
   <ItemGroup>
+    <CudaCompile Include="CudaStaticResolver.cu" />
     <CudaCompile Include="cuda_kernel.cu" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -65,13 +66,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(FREEGLUT_HOME)\inc;$(GLEW_HOME)\include;$(GLM_HOME);$(IncludePath)</IncludePath>
-    <LibraryPath>$(GLEW_HOME)\lib\Release\Win32;$(FREEGLUT_HOME)\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(FREEGLUT_HOME)\inc;$(GLEW_HOME)\include;$(GLM_HOME);$(YAML_HOME)\include;$(BOOST_ROOT);$(IncludePath)</IncludePath>
+    <LibraryPath>$(GLEW_HOME)\lib\Release\Win32;$(FREEGLUT_HOME)\lib;$(YAML_HOME)\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(FREEGLUT_HOME)\inc;$(GLEW_HOME)\include;$(GLM_HOME);$(IncludePath)</IncludePath>
-    <LibraryPath>$(GLEW_HOME)\lib\Release\Win32;$(FREEGLUT_HOME)\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(FREEGLUT_HOME)\inc;$(GLEW_HOME)\include;$(GLM_HOME);$(YAML_HOME)\include;$(BOOST_ROOT);$(IncludePath)</IncludePath>
+    <LibraryPath>$(GLEW_HOME)\lib\Release\Win32;$(FREEGLUT_HOME)\lib;$(YAML_HOME)\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

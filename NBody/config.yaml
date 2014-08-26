@@ -1,0 +1,21 @@
+Resolver: CudaStaticResolver
+
+NBodyConfig:
+    NumParticles: 1100800
+
+    ResolverSettings:
+        Mtot: 96.9e10
+        Msf: 0.14
+        Rs: 3160
+        Rdm: 6320
+        dT: 0.1
+        threadsPerBlock: 256
+
+    ViewerSettings:
+        WindowTitle: N-Body Window
+        WindowWidth: 1280
+        WindowHeight: 720
+        MaxFPS: 60
+        InitialZoom: 15
+        ExportFrames: false
+        ParticleSize: 1

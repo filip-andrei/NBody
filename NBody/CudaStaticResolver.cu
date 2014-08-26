@@ -1,14 +1,10 @@
 #include "CudaStaticResolver.cuh"
-
 #include "constants.cuh"
-#include "cuda_kernel.cuh"
 #include <cuda.h>
 #include <cmath>
 #include <cuda_gl_interop.h>
 #include <curand.h>
 #include <device_launch_parameters.h>
-
-
 
 //	Modified bessel functions I0,I1,K0,K1
 __device__ float mbessi0(float x) {
@@ -106,7 +102,6 @@ __device__ float stellarMassAtRadius(float r,
 __global__
 void cudaGenBodies(	float *d_pos,		//	Pointer to array in device memory containing positional information
 					float *d_vel,		//	Pointer to array in device memory containing velocity information
-					float *d_mas,		//	Pointer to array in device memory containing mass information
 					float *d_rands,		//	Pointer to array in device memory containing random numbers used to generate initial conditions
 					int NUM_PARTICLES,	//	Total number of particles in simulation
 					float Ms,			//	Total mass of bodies in simulation
@@ -155,9 +150,6 @@ void cudaGenBodies(	float *d_pos,		//	Pointer to array in device memory containi
 		d_vel[baseIndex+1] = velVector.y;
 		d_vel[baseIndex+2] = velVector.z;
 
-		
-		//	Set mass
-		//	TO-DO
 	}	
 }
 
@@ -201,64 +193,9 @@ __global__ void cudaMoveBodiesByDT_staticPotential(float *d_pos,
 	}
 }
 
+void genBodies(float *d_pos, float *d_vel, int NUM_PARTICLES, float Ms, float Rs, float Mdm, float Rdm, int blockSize){
 
-CudaStaticResolver::CudaStaticResolver(void)
-{
-	NUM_PARTICLES = -1;
-
-	Mtot = -1;
-	Msf = -1;
-
-	MPart = -1;
-
-	Ms = -1;
-	Mdm = -1;
-
-	Rs = -1;
-	Rdm = -1;
-
-	dT = -1;
-
-	threadsPerBlock = -1;
-}
-
-
-void CudaStaticResolver::loadSimConfig(){
-
-	NUM_PARTICLES = 256 * 430;
-
-	Mtot = 96.9e10f;
-	Msf = 0.14f;
-
-	MPart = (Mtot * Msf) / NUM_PARTICLES;
-
-	Ms = Mtot * Msf;
-	Mdm = Mtot - Ms;
-
-	Rs = 3160.0f;
-	Rdm = Rs * 2;
-
-	dT = 0.1f;
-
-	threadsPerBlock = 256;
-}
-
-void CudaStaticResolver::setPosBufferID(GLuint vboID){
-	posVboID = vboID;
-}
-
-void CudaStaticResolver::initialize(){
-
-	//	Map the OpenGL VBO containing particle positions to a cuda pointer
-	cudaGLRegisterBufferObject(posVboID);
-	cudaGLMapBufferObject( (void **)&d_positions, posVboID);
-
-	//	Allocate memory for velocity and mass data
-	cudaMalloc(&d_velocities, 3 * NUM_PARTICLES * sizeof(float));
-	cudaMalloc(&d_masses, NUM_PARTICLES * sizeof(float));
-
-
-	int blocks = NUM_PARTICLES / threadsPerBlock + (NUM_PARTICLES % threadsPerBlock == 0 ? 0:1);
+	int blocks = NUM_PARTICLES / blockSize + (NUM_PARTICLES % blockSize == 0 ? 0:1);
 
 	curandGenerator_t gen;
 	curandCreateGenerator(&gen, CURAND_RNG_PSEUDO_DEFAULT);
@@ -269,28 +206,18 @@ void CudaStaticResolver::initialize(){
 
 	curandGenerateUniform(gen, d_randoms, NUM_PARTICLES * 3);
 
-	cudaGenBodies<<<blocks, threadsPerBlock>>>(d_positions, d_velocities, d_masses, d_randoms, NUM_PARTICLES, Ms, Rs, Mdm, Rdm);
+	cudaGenBodies<<<blocks, blockSize>>>(d_pos, d_vel, d_randoms, NUM_PARTICLES, Ms, Rs, Mdm, Rdm);
 
 	cudaFree(d_randoms);
 	curandDestroyGenerator(gen);
-
-	cudaGLUnmapBufferObject(posVboID);
 }
 
-void CudaStaticResolver::advanceTimeStep() {
-	cudaGLRegisterBufferObject(posVboID);
-	cudaGLMapBufferObject( (void **)&d_positions, posVboID);
-
-	int blocks = NUM_PARTICLES / threadsPerBlock + (NUM_PARTICLES % threadsPerBlock == 0 ? 0:1);
-
-	cudaMoveBodiesByDT_staticPotential<<<blocks, threadsPerBlock>>>(d_positions, d_velocities, dT, NUM_PARTICLES, Ms, Rs, Mdm, Rdm);
-
-	cudaGLUnmapBufferObject(posVboID);
-}
+void moveBodiesByDT_staticPotential(float *d_pos, float *d_vel, float dT, int NUM_PARTICLES, float Ms, float Rs, float Mdm, float Rdm, int blockSize){
 
 
-CudaStaticResolver::~CudaStaticResolver(void){
-	cudaFree(d_positions);
-	cudaFree(d_velocities);
-	cudaFree(d_masses);
+
+	int blocks = NUM_PARTICLES / blockSize + (NUM_PARTICLES % blockSize == 0 ? 0:1);
+
+	cudaMoveBodiesByDT_staticPotential<<<blocks, blockSize>>>(d_pos, d_vel, dT, NUM_PARTICLES, Ms, Rs, Mdm, Rdm);
+
 }

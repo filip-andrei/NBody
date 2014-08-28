@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CudaStaticResolver", "CudaS
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NBody", "NBody\NBody.vcxproj", "{016EA018-D3CD-482F-9976-891383FEEC3D}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CudaAllPairsResolver", "CudaAllPairsResolver\CudaAllPairsResolver.vcxproj", "{32A8804F-BB21-4B3A-B7F3-55C766CE26AA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -35,6 +37,14 @@ Global
 		{016EA018-D3CD-482F-9976-891383FEEC3D}.Release|Win32.ActiveCfg = Release|Win32
 		{016EA018-D3CD-482F-9976-891383FEEC3D}.Release|Win32.Build.0 = Release|Win32
 		{016EA018-D3CD-482F-9976-891383FEEC3D}.Release|x64.ActiveCfg = Release|Win32
+		{32A8804F-BB21-4B3A-B7F3-55C766CE26AA}.Debug|Win32.ActiveCfg = Debug|Win32
+		{32A8804F-BB21-4B3A-B7F3-55C766CE26AA}.Debug|Win32.Build.0 = Debug|Win32
+		{32A8804F-BB21-4B3A-B7F3-55C766CE26AA}.Debug|x64.ActiveCfg = Debug|x64
+		{32A8804F-BB21-4B3A-B7F3-55C766CE26AA}.Debug|x64.Build.0 = Debug|x64
+		{32A8804F-BB21-4B3A-B7F3-55C766CE26AA}.Release|Win32.ActiveCfg = Release|Win32
+		{32A8804F-BB21-4B3A-B7F3-55C766CE26AA}.Release|Win32.Build.0 = Release|Win32
+		{32A8804F-BB21-4B3A-B7F3-55C766CE26AA}.Release|x64.ActiveCfg = Release|x64
+		{32A8804F-BB21-4B3A-B7F3-55C766CE26AA}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

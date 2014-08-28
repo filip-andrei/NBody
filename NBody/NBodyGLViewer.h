@@ -21,13 +21,15 @@ class NBodyGLViewer
 private:
 
 	//	Window Config
-	char *WINDOW_TITLE;
+	std::string WINDOW_TITLE;
 	int MAX_WIDTH;
 	int MAX_HEIGHT;
 	int MAX_FPS;
 	float POINT_SIZE;
 	float ZOOM;
 	bool exportFrames;
+	std::string exportLocation;
+	std::string exportFilePrefix;
 
 	//	Sim Config
 	int NUM_PARTICLES;

@@ -20,7 +20,7 @@ void NBodyGLViewer::initGL(int *argc, char **argv){
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
 	glutInitWindowPosition(100, 100);
 	glutInitWindowSize(MAX_WIDTH, MAX_HEIGHT);
-	glutCreateWindow(WINDOW_TITLE);
+	glutCreateWindow(WINDOW_TITLE.c_str());
 
 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
 
@@ -200,7 +200,7 @@ void timer(int flag) {
 	int newElapsedTime = glutGet(GLUT_ELAPSED_TIME);
 
 	char title[512];
-	sprintf_s(title, 512 * sizeof(char), "%s - %d ms per frame", viewer.WINDOW_TITLE, (int)(newElapsedTime - viewer.elapsedTime));
+	sprintf_s(title, 512 * sizeof(char), "%s - %d ms per frame", viewer.WINDOW_TITLE.c_str(), (int)(newElapsedTime - viewer.elapsedTime));
 	viewer.elapsedTime = glutGet(GLUT_ELAPSED_TIME);
 	glutSetWindowTitle(title);
 
@@ -233,7 +233,7 @@ void NBodyGLViewer::registerCallbacks(){
 
 void NBodyGLViewer::exportFrame(){
 	char filename[1024];
-	sprintf(filename, "D:\\Temp\\Frames\\110k-Msf0.14-SPa0.6-%05d.png", frameCounter++);
+	sprintf(filename, "%s%s%05d.png", exportLocation.c_str(), exportFilePrefix.c_str(), frameCounter++);
 	
 	glReadPixels(0, 0, MAX_WIDTH, MAX_HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, frameBuffer);
 	
@@ -262,10 +262,7 @@ bool NBodyGLViewer::init(int *argc, char **argv, AbstractResolver *resolver, YAM
 		YAML::Node &viewerConfig = config["ViewerSettings"];
 		//	Viewer Config
 		if(viewerConfig["WindowTitle"]){
-			const string &title = viewerConfig["WindowTitle"].as<string>();
-			WINDOW_TITLE = new char[title.size() + 1];
-			memset(WINDOW_TITLE, 0x00, (title.size() + 1) * sizeof(char));
-			strncpy(WINDOW_TITLE, title.c_str(), title.size());
+			WINDOW_TITLE = viewerConfig["WindowTitle"].as<string>();
 				
 		}else{
 			WINDOW_TITLE = "N-Body Window";
@@ -299,6 +296,20 @@ bool NBodyGLViewer::init(int *argc, char **argv, AbstractResolver *resolver, YAM
 			exportFrames = viewerConfig["ExportFrames"].as<bool>();
 		}else{
 			exportFrames = false;
+		}
+
+		if(viewerConfig["ExportLocation"]){
+			exportLocation = viewerConfig["ExportLocation"].as<std::string>();
+		}else{
+			cout<<"ExportLocation not specified"<<endl;
+			return false;
+		}
+
+		if(viewerConfig["ExportFilePrefix"]){
+			exportFilePrefix = viewerConfig["ExportFilePrefix"].as<std::string>();
+		}else{
+			cout<<"ExportFilePrefix not specified"<<endl;
+			return false;
 		}
 
 		if(viewerConfig["ParticleSize"]){
@@ -362,7 +373,7 @@ void NBodyGLViewer::start(){
 NBodyGLViewer::~NBodyGLViewer(void)
 {
 	
-	delete[] WINDOW_TITLE;
+	
 
 	/*glDeleteBuffers(1, &posArray);
 	glDeleteProgram(shaderProgramID);*/

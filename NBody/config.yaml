@@ -1,7 +1,8 @@
-Resolver: CudaStaticResolver
+Resolver: CudaAllPairsResolver
+#Resolver: CudaStaticResolver
 
 NBodyConfig:
-    NumParticles: 1100800
+    NumParticles: 107512
 
     ResolverSettings:
         Mtot: 96.9e10
@@ -18,4 +19,6 @@ NBodyConfig:
         MaxFPS: 60
         InitialZoom: 15
         ExportFrames: false
+        ExportLocation: d:\Temp\Frames\
+        ExportFilePrefix: nbody_dump_
         ParticleSize: 1

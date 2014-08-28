@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="DllMain.cpp">
+      <Filter>Host\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="CudaAllPairsResolver.cpp">
+      <Filter>Host\Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="DllExport.h">
+      <Filter>Host\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="constants.cuh">
+      <Filter>Device\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="CudaAllPairsResolver.cuh">
+      <Filter>Device\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="CudaAllPairsResolver.h">
+      <Filter>Host\Header</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Host">
+      <UniqueIdentifier>{62fdc378-d852-4ea2-8cbb-650347b36afe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Host\Header">
+      <UniqueIdentifier>{9f8d1d93-e057-4c7e-8cf3-f17e9e437732}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Host\Source">
+      <UniqueIdentifier>{09f32feb-13b8-4c57-b6c3-26abaee43dc1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Device">
+      <UniqueIdentifier>{930d545b-54bd-4ee6-884f-558d34435326}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Device\Header">
+      <UniqueIdentifier>{9f2fc774-8894-4ce9-ba5f-2a5e51dfb91b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Device\Source">
+      <UniqueIdentifier>{cc04636d-010f-45b9-a980-8502eaa8c799}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="CudaAllPairsResolver.cu">
+      <Filter>Device\Source</Filter>
+    </CudaCompile>
+  </ItemGroup>
+</Project>

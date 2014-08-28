@@ -1,5 +1,5 @@
-#include "CudaStaticResolver.h"
-#include "CudaStaticResolver.cuh"
+#include "CudaAllPairsResolver.h"
+#include "CudaAllPairsResolver.cuh"
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <cuda_gl_interop.h>
@@ -14,7 +14,7 @@
 using namespace std;
 
 
-CudaStaticResolver::CudaStaticResolver(void)
+CudaAllPairsResolver::CudaAllPairsResolver(void)
 {
 	NUM_PARTICLES = -1;
 
@@ -33,11 +33,11 @@ CudaStaticResolver::CudaStaticResolver(void)
 }
 
 
-void CudaStaticResolver::setPosBufferID(GLuint vboID){
+void CudaAllPairsResolver::setPosBufferID(GLuint vboID){
 	posVboID = vboID;
 }
 
-bool CudaStaticResolver::initialize(YAML::Node &config){
+bool CudaAllPairsResolver::initialize(YAML::Node &config){
 	
 	try{
 
@@ -116,7 +116,10 @@ bool CudaStaticResolver::initialize(YAML::Node &config){
 	//	Allocate memory for velocities vector
 	cudaMalloc((void **)&d_velocities, 3 * NUM_PARTICLES * sizeof(float));
 
-	genBodies(d_positions, d_velocities, NUM_PARTICLES, Ms, Rs, Mdm, Rdm, threadsPerBlock);
+	//	Allocate memory for masses
+	cudaMalloc((void **)&d_masses, NUM_PARTICLES * sizeof(float));
+
+	genBodies(d_positions, d_velocities, d_masses, NUM_PARTICLES, Ms, Rs, Mdm, Rdm, threadsPerBlock);
 
 	cudaGLUnmapBufferObject(posVboID);
 
@@ -124,17 +127,17 @@ bool CudaStaticResolver::initialize(YAML::Node &config){
 	return true;
 }
 
-void CudaStaticResolver::advanceTimeStep() {
+void CudaAllPairsResolver::advanceTimeStep() {
 
 	cudaGLMapBufferObject( (void **)&d_positions, posVboID);
 
-	moveBodiesByDT(d_positions, d_velocities, dT, NUM_PARTICLES, Ms, Rs, Mdm, Rdm, threadsPerBlock);
+	moveBodiesByDT(d_positions, d_velocities, d_masses, dT, NUM_PARTICLES, Ms, Rs, Mdm, Rdm, threadsPerBlock);
 
 	cudaGLUnmapBufferObject(posVboID);
 }
 
 
-CudaStaticResolver::~CudaStaticResolver(void){
-	cudaFree(d_positions);
+CudaAllPairsResolver::~CudaAllPairsResolver(void){
 	cudaFree(d_velocities);
+	cudaFree(d_masses);
 }

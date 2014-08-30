@@ -2,7 +2,7 @@ Resolver: CudaAllPairsResolver
 #Resolver: CudaStaticResolver
 
 NBodyConfig:
-    NumParticles: 107512
+    NumParticles: 20000
 
     ResolverSettings:
         Mtot: 96.9e10
@@ -14,11 +14,11 @@ NBodyConfig:
 
     ViewerSettings:
         WindowTitle: N-Body Window
-        WindowWidth: 1280
-        WindowHeight: 720
+        WindowWidth: 1288
+        WindowHeight: 728
         MaxFPS: 60
         InitialZoom: 15
         ExportFrames: false
         ExportLocation: d:\Temp\Frames\
-        ExportFilePrefix: nbody_dump_
+        ExportFilePrefix: 99k-Msf0.14-Mtot96.9e10_
         ParticleSize: 1

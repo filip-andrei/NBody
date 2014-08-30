@@ -152,10 +152,10 @@ void cudaGenBodies(	float *d_pos,		//	Pointer to array in device memory containi
 		d_vel[baseIndex+2] = velVector.z;
 
 
-		//	Set Mass TO_DO
-		d_mas[baseIndex] = 20.0f;
+		//	Set Mass ( #TO_DO density spike )
+		d_mas[globalId] = Ms / NUM_PARTICLES;
 
-	}	
+	}
 }
 
 
@@ -174,7 +174,6 @@ __global__ void cudaMoveBodiesByDT_AllPairs(float *d_pos,
 	extern __shared__ float shmem[];
 
 
-	float bodyMass = 1154435.0f;
 
 	if(globalId < NUM_PARTICLES){
 
@@ -184,29 +183,34 @@ __global__ void cudaMoveBodiesByDT_AllPairs(float *d_pos,
 		currentParticlePos.y += d_vel[globalId * 3 + 1] * velConvFactor * dT;
 		currentParticlePos.z += d_vel[globalId * 3 + 2] * velConvFactor * dT;
 
-		float3 totalAcceleration = make_float3(0, 0, 0);	//	in km/s
+		float3 totalAcceleration = make_float3(0, 0, 0);	//	in km/s^2
 
 		//	Stellar gravitational influences
 		
-		for(int stride = 0; stride < NUM_PARTICLES - blockDim.x; stride += blockDim.x){
+		for(int stride = 0; stride < NUM_PARTICLES; stride += blockDim.x){
 			__syncthreads();
 
-			shmem[threadId * 3] = d_pos[(stride + threadId) * 3];
-			shmem[threadId * 3 + 1] = d_pos[(stride + threadId) * 3 + 1];
-			shmem[threadId * 3 + 2] = d_pos[(stride + threadId) * 3 + 2];
+			if(stride + threadId < NUM_PARTICLES){
+				shmem[threadId * 3] = d_pos[(stride + threadId) * 3];
+				shmem[threadId * 3 + 1] = d_pos[(stride + threadId) * 3 + 1];
+				shmem[threadId * 3 + 2] = d_pos[(stride + threadId) * 3 + 2];
+				shmem[blockDim.x * 3 + threadId] = d_mas[stride + threadId];
+			}
 
 			__syncthreads();
 			for(int i = 0; i < blockDim.x; i++){
-				if(globalId != (stride + i)){
+				if((globalId != (stride + i)) && ((stride + i) < NUM_PARTICLES)){
 					float3 destParticlePos = make_float3(shmem[i * 3], shmem[i * 3 + 1], shmem[i * 3 + 2]);
 
 					float3 rVector = make_float3(currentParticlePos.x - destParticlePos.x, currentParticlePos.y - destParticlePos.y, currentParticlePos.z - destParticlePos.z);
 					float r = sqrtf(rVector.x * rVector.x + rVector.y * rVector.y + rVector.z * rVector.z);
 					float3 rUnit = make_float3(rVector.x / r, rVector.y / r, rVector.z / r);
 
+					float bodyMass = shmem[blockDim.x * 3 + i];
+
 					//float acc = -((G * bodyMass) / (r*r)) * (1 / kmPerPc);
-					float a = 0.01f;
-					float acc = -((G * bodyMass * r) / ( sqrtf(powf(r*r + a * a, 3)) )) * (1 / kmPerPc);
+					float a = 1.0f;
+					float acc = -((G * bodyMass * r) / ( sqrtf(powf(r*r + a * a, 3.0f)) )) * (1 / kmPerPc);
 
 					totalAcceleration.x += acc * rUnit.x;
 					totalAcceleration.y += acc * rUnit.y;
@@ -225,7 +229,7 @@ __global__ void cudaMoveBodiesByDT_AllPairs(float *d_pos,
 
 		float relevantDMMass = dmMassAtRadius(r, Mdm, Rdm);
 
-		float accFromDM = -((G * relevantDMMass) / (r * r)) * (1 / kmPerPc);
+		float accFromDM = -((G * relevantDMMass) / (r * r)) * (1.0f / kmPerPc);
 
 		totalAcceleration.x += accFromDM * rUnit.x;
 		totalAcceleration.y += accFromDM * rUnit.y;
@@ -267,7 +271,7 @@ void moveBodiesByDT(float *d_pos, float *d_vel, float *d_mas, float dT, int NUM_
 
 	int blocks = NUM_PARTICLES / blockSize + (NUM_PARTICLES % blockSize == 0 ? 0:1);
 
-	int shmem = blockSize * 3 * sizeof(float);
+	int shmem = blockSize * 4 * sizeof(float);
 
 	cudaMoveBodiesByDT_AllPairs<<<blocks, blockSize, shmem>>>(d_pos, d_vel, d_mas, dT, NUM_PARTICLES, Mdm, Rdm);
 

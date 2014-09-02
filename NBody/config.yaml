@@ -9,6 +9,12 @@ NBodyConfig:
         Msf: 0.14
         Rs: 3160
         Rdm: 6320
+        a: 1.5
+        Ca: 4.0
+        CloudChance: 0.001
+        CloudMassCoef: 1000.0
+
+
         dT: 0.1
         threadsPerBlock: 256
 

@@ -108,7 +108,9 @@ void cudaGenBodies(	float *d_pos,		//	Pointer to array in device memory containi
 					float Ms,			//	Total mass of bodies in simulation
 					float Rs,			//	Scale radius for stellar density profile
 					float Mdm,			//	Total mass of dark matter in simulation
-					float Rdm)			//	Scale radius for dark matter density profile
+					float Rdm,			//	Scale radius for dark matter density profile
+					float cloudChance,	//	Ratio of molecular clouds to regular stars
+					float cloudMassCoef)//	Times the mass of a molecular cloud is greater than a regular star
 {
 
 	int threadId = threadIdx.x;
@@ -117,12 +119,13 @@ void cudaGenBodies(	float *d_pos,		//	Pointer to array in device memory containi
 	int globalId = blockId * blockDim.x + threadId;
 
 	if(globalId < NUM_PARTICLES){
-		int baseIndex = globalId * 3;
+		int baseReadIndex = globalId * 4;
+		int baseWriteIndex = globalId * 3;
 
-		float x = d_rands[baseIndex];
-		float y = d_rands[baseIndex+1];
-		float z = d_rands[baseIndex+2];
-
+		float x = d_rands[baseReadIndex];
+		float y = d_rands[baseReadIndex+1];
+		float z = d_rands[baseReadIndex+2];
+		float w = d_rands[baseReadIndex+3];
 		
 		//	Set position
 
@@ -132,9 +135,9 @@ void cudaGenBodies(	float *d_pos,		//	Pointer to array in device memory containi
 		float Sx = sqrt(rx*rx) * cos(2.0f * 3.1416f * y);
 		float Sy = sqrt(rx*rx) * sin(2.0f * 3.1416f * y);
 
-		d_pos[baseIndex] = Sx;
-		d_pos[baseIndex+1] = Sy;
-		d_pos[baseIndex+2] = Sz;
+		d_pos[baseWriteIndex] = Sx;
+		d_pos[baseWriteIndex+1] = Sy;
+		d_pos[baseWriteIndex+2] = Sz;
 
 		
 		//	Set velocity
@@ -147,13 +150,17 @@ void cudaGenBodies(	float *d_pos,		//	Pointer to array in device memory containi
 
 		float3 velVector = make_float3(velUnitVector.x * absVel, velUnitVector.y * absVel, velUnitVector.z * absVel);
 
-		d_vel[baseIndex] = velVector.x;
-		d_vel[baseIndex+1] = velVector.y;
-		d_vel[baseIndex+2] = velVector.z;
+		d_vel[baseWriteIndex] = velVector.x;
+		d_vel[baseWriteIndex+1] = velVector.y;
+		d_vel[baseWriteIndex+2] = velVector.z;
 
 
-		//	Set Mass ( #TO_DO density spike )
-		d_mas[globalId] = Ms / NUM_PARTICLES;
+		//	Set Mass
+		float mass = Ms / NUM_PARTICLES;
+		if(w < cloudChance){
+			mass *= cloudMassCoef;
+		}
+		d_mas[globalId] = mass;
 
 	}
 }
@@ -247,7 +254,7 @@ __global__ void cudaMoveBodiesByDT_AllPairs(float *d_pos,
 	}
 }
 
-void genBodies(float *d_pos, float *d_vel, float *d_mas, int NUM_PARTICLES, float Ms, float Rs, float Mdm, float Rdm, int blockSize){
+void genBodies(float *d_pos, float *d_vel, float *d_mas, int NUM_PARTICLES, float Ms, float Rs, float Mdm, float Rdm, float cloudChance, float cloudMassCoef, int blockSize){
 
 	int blocks = NUM_PARTICLES / blockSize + (NUM_PARTICLES % blockSize == 0 ? 0:1);
 
@@ -256,17 +263,17 @@ void genBodies(float *d_pos, float *d_vel, float *d_mas, int NUM_PARTICLES, floa
 	curandSetPseudoRandomGeneratorSeed(gen, 1234ULL);
 
 	float *d_randoms;
-	cudaMalloc(&d_randoms, sizeof(float) * 3 * NUM_PARTICLES);
+	cudaMalloc(&d_randoms, sizeof(float) * 4 * NUM_PARTICLES);
 
-	curandGenerateUniform(gen, d_randoms, NUM_PARTICLES * 3);
+	curandGenerateUniform(gen, d_randoms, NUM_PARTICLES * 4);
 
-	cudaGenBodies<<<blocks, blockSize>>>(d_pos, d_vel, d_mas, d_randoms, NUM_PARTICLES, Ms, Rs, Mdm, Rdm);
+	cudaGenBodies<<<blocks, blockSize>>>(d_pos, d_vel, d_mas, d_randoms, NUM_PARTICLES, Ms, Rs, Mdm, Rdm, cloudChance, cloudMassCoef);
 
 	cudaFree(d_randoms);
 	curandDestroyGenerator(gen);
 }
 
-void moveBodiesByDT(float *d_pos, float *d_vel, float *d_mas, float dT, int NUM_PARTICLES, float Ms, float Rs, float Mdm, float Rdm, int blockSize){
+void moveBodiesByDT(float *d_pos, float *d_vel, float *d_mas, float *d_rad, float dT, int NUM_PARTICLES, float Ms, float Rs, float Mdm, float Rdm, int blockSize){
 
 
 	int blocks = NUM_PARTICLES / blockSize + (NUM_PARTICLES % blockSize == 0 ? 0:1);

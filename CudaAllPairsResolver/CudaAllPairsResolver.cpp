@@ -96,6 +96,34 @@ bool CudaAllPairsResolver::initialize(YAML::Node &config){
 				return false;
 			}
 
+			if(resolverConfig["a"]){
+				a = resolverConfig["a"].as<float>();
+			}else{
+				cout<<"a not found in config file"<<endl;
+				return false;
+			}
+
+			if(resolverConfig["Ca"]){
+				Ca = resolverConfig["Ca"].as<float>();
+			}else{
+				cout<<"Ca not found in config file"<<endl;
+				return false;
+			}
+
+			if(resolverConfig["CloudChance"]){
+				cloudChance = resolverConfig["CloudChance"].as<float>();
+			}else{
+				cout<<"CloudChance not found in config file"<<endl;
+				return false;
+			}
+
+			if(resolverConfig["CloudMassCoef"]){
+				cloudMassCoef = resolverConfig["CloudMassCoef"].as<float>();
+			}else{
+				cout<<"CloudMassCoef not found in config file"<<endl;
+				return false;
+			}
+
 			Ms = Mtot * Msf;
 			Mdm = Mtot - Ms;
 		}else{
@@ -119,7 +147,10 @@ bool CudaAllPairsResolver::initialize(YAML::Node &config){
 	//	Allocate memory for masses
 	cudaMalloc((void **)&d_masses, NUM_PARTICLES * sizeof(float));
 
-	genBodies(d_positions, d_velocities, d_masses, NUM_PARTICLES, Ms, Rs, Mdm, Rdm, threadsPerBlock);
+	//	Allocate memory for scale radii
+	cudaMalloc((void **)&d_scaleRadii, NUM_PARTICLES * sizeof(float));
+
+	genBodies(d_positions, d_velocities, d_masses, d_scaleRadii, NUM_PARTICLES, Ms, Rs, Mdm, Rdm, cloudChance, cloudMassCoef, threadsPerBlock);
 
 	cudaGLUnmapBufferObject(posVboID);
 

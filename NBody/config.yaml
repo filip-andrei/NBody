@@ -2,7 +2,7 @@ Resolver: CudaAllPairsResolver
 #Resolver: CudaStaticResolver
 
 NBodyConfig:
-    NumParticles: 20000
+    NumParticles: 102400
 
     ResolverSettings:
         Mtot: 96.9e10
@@ -10,11 +10,9 @@ NBodyConfig:
         Rs: 3160
         Rdm: 6320
         a: 1.5
-        Ca: 4.0
-        CloudChance: 0.001
-        CloudMassCoef: 1000.0
-
-
+        Ca: 40.0
+        CloudChance: 0.0
+        CloudMassCoef: 500.0
         dT: 0.1
         threadsPerBlock: 256
 

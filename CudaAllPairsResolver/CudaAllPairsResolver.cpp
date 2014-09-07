@@ -150,7 +150,7 @@ bool CudaAllPairsResolver::initialize(YAML::Node &config){
 	//	Allocate memory for scale radii
 	cudaMalloc((void **)&d_scaleRadii, NUM_PARTICLES * sizeof(float));
 
-	genBodies(d_positions, d_velocities, d_masses, d_scaleRadii, NUM_PARTICLES, Ms, Rs, Mdm, Rdm, cloudChance, cloudMassCoef, threadsPerBlock);
+	genBodies(d_positions, d_velocities, d_masses, d_scaleRadii, NUM_PARTICLES, Ms, Rs, Mdm, Rdm, cloudChance, cloudMassCoef, a, Ca, threadsPerBlock);
 
 	cudaGLUnmapBufferObject(posVboID);
 
@@ -162,7 +162,7 @@ void CudaAllPairsResolver::advanceTimeStep() {
 
 	cudaGLMapBufferObject( (void **)&d_positions, posVboID);
 
-	moveBodiesByDT(d_positions, d_velocities, d_masses, dT, NUM_PARTICLES, Ms, Rs, Mdm, Rdm, threadsPerBlock);
+	moveBodiesByDT(d_positions, d_velocities, d_masses, d_scaleRadii, dT, NUM_PARTICLES, Ms, Rs, Mdm, Rdm, threadsPerBlock);
 
 	cudaGLUnmapBufferObject(posVboID);
 }

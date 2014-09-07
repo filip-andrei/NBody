@@ -103,6 +103,7 @@ __global__
 void cudaGenBodies(	float *d_pos,		//	Pointer to array in device memory containing positional information
 					float *d_vel,		//	Pointer to array in device memory containing velocity information
 					float *d_mas,		//	Pointer to array in device memory containing mass information
+					float *d_rad,		//	Pointer to array in device memory containing gravitational damping scale radii
 					float *d_rands,		//	Pointer to array in device memory containing random numbers used to generate initial conditions
 					int NUM_PARTICLES,	//	Total number of particles in simulation
 					float Ms,			//	Total mass of bodies in simulation
@@ -110,7 +111,9 @@ void cudaGenBodies(	float *d_pos,		//	Pointer to array in device memory containi
 					float Mdm,			//	Total mass of dark matter in simulation
 					float Rdm,			//	Scale radius for dark matter density profile
 					float cloudChance,	//	Ratio of molecular clouds to regular stars
-					float cloudMassCoef)//	Times the mass of a molecular cloud is greater than a regular star
+					float cloudMassCoef,//	Times the mass of a molecular cloud is greater than a regular star
+					float a,			//	Gravity force damping scale radius for regular stars
+					float Ca)			//	Gravity force damping scale radius for molecular clouds
 {
 
 	int threadId = threadIdx.x;
@@ -155,12 +158,15 @@ void cudaGenBodies(	float *d_pos,		//	Pointer to array in device memory containi
 		d_vel[baseWriteIndex+2] = velVector.z;
 
 
-		//	Set Mass
+		//	Set Mass and grav damping scale radius
 		float mass = Ms / NUM_PARTICLES;
+		float Da = a;
 		if(w < cloudChance){
 			mass *= cloudMassCoef;
+			Da = Ca;
 		}
 		d_mas[globalId] = mass;
+		d_rad[globalId] = Da;
 
 	}
 }
@@ -169,6 +175,7 @@ void cudaGenBodies(	float *d_pos,		//	Pointer to array in device memory containi
 __global__ void cudaMoveBodiesByDT_AllPairs(float *d_pos, 
 											float *d_vel, 
 											float *d_mas, 
+											float *d_rad,
 											float dT, 
 											int NUM_PARTICLES,
 											float Mdm, 
@@ -202,6 +209,7 @@ __global__ void cudaMoveBodiesByDT_AllPairs(float *d_pos,
 				shmem[threadId * 3 + 1] = d_pos[(stride + threadId) * 3 + 1];
 				shmem[threadId * 3 + 2] = d_pos[(stride + threadId) * 3 + 2];
 				shmem[blockDim.x * 3 + threadId] = d_mas[stride + threadId];
+				shmem[blockDim.x * 4 + threadId] = d_rad[stride + threadId];
 			}
 
 			__syncthreads();
@@ -216,7 +224,7 @@ __global__ void cudaMoveBodiesByDT_AllPairs(float *d_pos,
 					float bodyMass = shmem[blockDim.x * 3 + i];
 
 					//float acc = -((G * bodyMass) / (r*r)) * (1 / kmPerPc);
-					float a = 1.0f;
+					float a = shmem[blockDim.x * 4 + i];
 					float acc = -((G * bodyMass * r) / ( sqrtf(powf(r*r + a * a, 3.0f)) )) * (1 / kmPerPc);
 
 					totalAcceleration.x += acc * rUnit.x;
@@ -254,7 +262,7 @@ __global__ void cudaMoveBodiesByDT_AllPairs(float *d_pos,
 	}
 }
 
-void genBodies(float *d_pos, float *d_vel, float *d_mas, int NUM_PARTICLES, float Ms, float Rs, float Mdm, float Rdm, float cloudChance, float cloudMassCoef, int blockSize){
+void genBodies(float *d_pos, float *d_vel, float *d_mas, float *d_rad, int NUM_PARTICLES, float Ms, float Rs, float Mdm, float Rdm, float cloudChance, float cloudMassCoef, float a, float Ca, int blockSize){
 
 	int blocks = NUM_PARTICLES / blockSize + (NUM_PARTICLES % blockSize == 0 ? 0:1);
 
@@ -267,7 +275,7 @@ void genBodies(float *d_pos, float *d_vel, float *d_mas, int NUM_PARTICLES, floa
 
 	curandGenerateUniform(gen, d_randoms, NUM_PARTICLES * 4);
 
-	cudaGenBodies<<<blocks, blockSize>>>(d_pos, d_vel, d_mas, d_randoms, NUM_PARTICLES, Ms, Rs, Mdm, Rdm, cloudChance, cloudMassCoef);
+	cudaGenBodies<<<blocks, blockSize>>>(d_pos, d_vel, d_mas, d_rad, d_randoms, NUM_PARTICLES, Ms, Rs, Mdm, Rdm, cloudChance, cloudMassCoef, a, Ca);
 
 	cudaFree(d_randoms);
 	curandDestroyGenerator(gen);
@@ -278,8 +286,8 @@ void moveBodiesByDT(float *d_pos, float *d_vel, float *d_mas, float *d_rad, floa
 
 	int blocks = NUM_PARTICLES / blockSize + (NUM_PARTICLES % blockSize == 0 ? 0:1);
 
-	int shmem = blockSize * 4 * sizeof(float);
+	int shmem = blockSize * 5 * sizeof(float);
 
-	cudaMoveBodiesByDT_AllPairs<<<blocks, blockSize, shmem>>>(d_pos, d_vel, d_mas, dT, NUM_PARTICLES, Mdm, Rdm);
+	cudaMoveBodiesByDT_AllPairs<<<blocks, blockSize, shmem>>>(d_pos, d_vel, d_mas, d_rad, dT, NUM_PARTICLES, Mdm, Rdm);
 
 }

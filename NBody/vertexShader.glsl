@@ -16,5 +16,6 @@ void main(){
 
 	
 
-	opacity = 1.0f - (densityAtRadius(length(vec2(v))) / densityAtRadius(0.0f));
+	//opacity = 1.0f - (densityAtRadius(length(vec2(v))) / densityAtRadius(0.0f));
+	opacity = 1.0f;
 }

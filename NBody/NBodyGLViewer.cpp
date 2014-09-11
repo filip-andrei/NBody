@@ -128,7 +128,7 @@ void render(){
 
 	glm::mat4 view = glm::lookAt(glm::vec3(0.0,0.0,1.0), glm::vec3(0.0,0.0,0.0), glm::vec3(0.0,1.0,0.0));
 
-	glm::mat4 projection = glm::perspective(45.0f, (float)viewer.MAX_WIDTH/viewer.MAX_HEIGHT, 0.1f, 100.0f);
+	glm::mat4 projection = glm::perspective(45.0f, (float)viewer.MAX_WIDTH/viewer.MAX_HEIGHT, 0.001f, 100.0f);
 
 	viewer.MVP = projection * view * model;
 
@@ -345,7 +345,7 @@ bool NBodyGLViewer::init(int *argc, char **argv, AbstractResolver *resolver, YAM
 	
 	glm::mat4 model = glm::scale(glm::vec3(1.0));
 	glm::mat4 view = glm::lookAt(glm::vec3(0.0,0.0,1.0), glm::vec3(0.0,0.0,0.0), glm::vec3(0.0,1.0,0.0));
-	glm::mat4 projection = glm::perspective(45.0f, (float)MAX_WIDTH/MAX_HEIGHT, 0.1f, 100.0f);
+	glm::mat4 projection = glm::perspective(45.0f, (float)MAX_WIDTH/MAX_HEIGHT, 0.001f, 100.0f);
 
 	MVP = projection * view * model;
 

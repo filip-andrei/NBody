@@ -1,9 +1,8 @@
-#include "CudaAllPairsResolver.h"
-#include "CudaAllPairsResolver.cuh"
-#include <cuda.h>
-#include <cuda_runtime_api.h>
-#include <cuda_gl_interop.h>
+#include "CPUAllPairsResolver.h"
+
 #include <iostream>
+#include <stdlib.h>
+
 
 #ifdef _DEBUG
 #pragma comment(lib, "libyaml-cppmdd.lib")
@@ -11,21 +10,22 @@
 #pragma comment(lib, "libyaml-cppmd.lib")
 #endif
 
+
+
+
 using namespace std;
 
 
-CudaAllPairsResolver::CudaAllPairsResolver(void)
+CPUAllPairsResolver::CPUAllPairsResolver(void)
 {
 
 }
 
-
-void CudaAllPairsResolver::setPosBufferID(GLuint vboID){
-	posVboID = vboID;
+void CPUAllPairsResolver::setPosBufferID(GLuint vboID){
+	this->posVboID = vboID;
 }
 
-bool CudaAllPairsResolver::initialize(YAML::Node &config){
-	
+bool CPUAllPairsResolver::initialize(YAML::Node &config){
 	try{
 
 		//	Load sim config
@@ -75,13 +75,6 @@ bool CudaAllPairsResolver::initialize(YAML::Node &config){
 				cout<<"dT not found in config file"<<endl;
 				return false;
 			}
-			
-			if(resolverConfig["threadsPerBlock"]){
-				threadsPerBlock = resolverConfig["threadsPerBlock"].as<int>();
-			}else{
-				cout<<"threadsPerBlock not found in config file"<<endl;
-				return false;
-			}
 
 			if(resolverConfig["a"]){
 				a = resolverConfig["a"].as<float>();
@@ -124,38 +117,71 @@ bool CudaAllPairsResolver::initialize(YAML::Node &config){
 		return false;
 	}
 
-	//	Map the OpenGL VBO containing particle positions to a cuda pointer
-	cudaGLRegisterBufferObject(posVboID);
-	cudaGLMapBufferObject( (void **)&d_positions, posVboID);
 
-	//	Allocate memory for velocities vector
-	cudaMalloc((void **)&d_velocities, 3 * NUM_PARTICLES * sizeof(float));
+	positions = new float[NUM_PARTICLES * 3];
+	velocities = new float[NUM_PARTICLES * 3];
+	masses = new float[NUM_PARTICLES];
+	scaleRadii = new float[NUM_PARTICLES];
+	
 
-	//	Allocate memory for masses
-	cudaMalloc((void **)&d_masses, NUM_PARTICLES * sizeof(float));
 
-	//	Allocate memory for scale radii
-	cudaMalloc((void **)&d_scaleRadii, NUM_PARTICLES * sizeof(float));
+	genBodies();
 
-	genBodies(d_positions, d_velocities, d_masses, d_scaleRadii, NUM_PARTICLES, Ms, Rs, Mdm, Rdm, cloudChance, cloudMassCoef, a, Ca, threadsPerBlock);
-
-	cudaGLUnmapBufferObject(posVboID);
-
+	
 
 	return true;
 }
 
-void CudaAllPairsResolver::advanceTimeStep() {
 
-	cudaGLMapBufferObject( (void **)&d_positions, posVboID);
+void CPUAllPairsResolver::genBodies(){
 
-	moveBodiesByDT(d_positions, d_velocities, d_masses, d_scaleRadii, dT, NUM_PARTICLES, Ms, Rs, Mdm, Rdm, threadsPerBlock);
+	const float HI = 0.0f;
+	const float LO = 1.0f;
 
-	cudaGLUnmapBufferObject(posVboID);
+	srand(1234);
+
+	
+	for(int i = 0; i < NUM_PARTICLES; i++){
+		
+		float x = LO + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(HI-LO)));
+		float y = LO + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(HI-LO)));
+		float z = LO + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(HI-LO)));
+		float w = LO + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(HI-LO)));
+
+		if(x == 0.0f || x == 1.0f || y == 0.0f || y == 1.0f){
+			i--;
+			continue;
+		}
+
+		float rx = -Rs * log(1.0f - x);
+
+		float Sz = -(1.0f/2.0f) * (0.1f * Rs) * log(-((z-1)/z));		
+		float Sx = sqrt(rx*rx) * cos(2.0f * 3.1416f * y);
+		float Sy = sqrt(rx*rx) * sin(2.0f * 3.1416f * y);
+
+
+		positions[i * 3] = Sx;
+		positions[i * 3 + 1] = Sy;
+		positions[i * 3 + 2] = Sz;
+
+
+	}
+
+	glBindBuffer(GL_ARRAY_BUFFER, posVboID);
+	glBufferData(GL_ARRAY_BUFFER, 3 * NUM_PARTICLES * sizeof(float), positions, GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
 }
 
 
-CudaAllPairsResolver::~CudaAllPairsResolver(void){
-	cudaFree(d_velocities);
-	cudaFree(d_masses);
+void CPUAllPairsResolver::advanceTimeStep(){
+
+}
+
+CPUAllPairsResolver::~CPUAllPairsResolver(void)
+{
+	delete[] positions;
+	delete[] velocities;
+	delete[] masses;
+	delete[] scaleRadii;
 }

@@ -146,6 +146,7 @@ void cudaGenBodies(	float *d_pos,		//	Pointer to array in device memory containi
 		//	Set velocity
 
 		float realRad = sqrt(Sx * Sx + Sy * Sy + Sz * Sz);
+
 		float t = realRad / (2.0f * Rs);
 		float absVel = sqrt( (G * dmMassAtRadius(realRad, Mdm, Rdm)) / realRad + ((2.0f * G * Ms) / Rs) * t * t * (mbessi0(t)*mbessk0(t) - mbessi1(t)*mbessk1(t)) );
 		

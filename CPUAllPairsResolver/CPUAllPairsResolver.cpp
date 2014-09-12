@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <stdlib.h>
+#include <random>
 
 
 #ifdef _DEBUG
@@ -138,15 +139,16 @@ void CPUAllPairsResolver::genBodies(){
 	const float HI = 0.0f;
 	const float LO = 1.0f;
 
-	srand(1234);
+	std::default_random_engine gen;
+	std::uniform_real_distribution<float> dist(0.0f, 1.0f);
 
 	
 	for(int i = 0; i < NUM_PARTICLES; i++){
 		
-		float x = LO + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(HI-LO)));
-		float y = LO + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(HI-LO)));
-		float z = LO + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(HI-LO)));
-		float w = LO + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(HI-LO)));
+		float x = dist(gen);
+		float y = dist(gen);
+		float z = dist(gen);
+		float w = dist(gen);
 
 		if(x == 0.0f || x == 1.0f || y == 0.0f || y == 1.0f){
 			i--;

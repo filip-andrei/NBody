@@ -46,16 +46,16 @@ private:
 	//	Id of the GL Vertex Buffer containing positional data
 	GLuint posVboID;
 
-	//	Cuda pointer to positional vector data (PCs)
+	//	Array of positional vector data (PCs)
 	float *positions;
 
 	//	Cuda pointer to velocity vector data (Km/s)
 	float *velocities;
 
-	//	Cuda pointer to mass data (SM)
+	//	Array of mass data (SM)
 	float *masses;
 
-	//	Cuda pointer to gravitational damping scale radii (Pcs)
+	//	Array of gravitational damping scale radii (Pcs)
 	float *scaleRadii;
 
 

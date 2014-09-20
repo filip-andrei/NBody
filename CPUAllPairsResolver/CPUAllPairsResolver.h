@@ -34,15 +34,6 @@ private:
 	//	Scale radius for particle gravitational damping at close distances (Pcs)
 	float a;
 
-	//	Same as above only for molecular clouds (Pcs)
-	float Ca;
-
-	//	Ratio of molecular clouds to regular stars
-	float cloudChance;
-
-	//	Times the mass of a molecular cloud is greater than a regular star
-	float cloudMassCoef;
-
 	//	Id of the GL Vertex Buffer containing positional data
 	GLuint posVboID;
 
@@ -52,14 +43,17 @@ private:
 	//	Cuda pointer to velocity vector data (Km/s)
 	float *velocities;
 
-	//	Array of mass data (SM)
-	float *masses;
+	//	Modified bessel functions I0,I1,K0,K1
+	float mbessi0(float x);
+	float mbessi1(float x);
+	float mbessk0(float x);
+	float mbessk1(float x);
 
-	//	Array of gravitational damping scale radii (Pcs)
-	float *scaleRadii;
+	float dmMassAtRadius(float r);
 
 
 	void genBodies();
+
 
 
 public:

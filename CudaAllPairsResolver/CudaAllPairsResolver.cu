@@ -173,14 +173,15 @@ void cudaGenBodies(	float *d_pos,		//	Pointer to array in device memory containi
 }
 
 
-__global__ void cudaMoveBodiesByDT_AllPairs(float *d_pos, 
-											float *d_vel, 
-											float *d_mas, 
-											float *d_rad,
-											float dT, 
-											int NUM_PARTICLES,
-											float Mdm, 
-											float Rdm){
+__global__ void getAccelerations_allPairs(float *d_pos, 
+										  float *d_mas, 
+										  float *d_rad,
+										  float *d_acc,
+										  int NUM_PARTICLES,
+										  float Mdm, 
+										  float Rdm)
+{
+
 	int threadId = threadIdx.x;
 	int blockId = blockIdx.x;
 
@@ -189,14 +190,9 @@ __global__ void cudaMoveBodiesByDT_AllPairs(float *d_pos,
 	extern __shared__ float shmem[];
 
 
-
 	if(globalId < NUM_PARTICLES){
 
 		float3 currentParticlePos = make_float3(d_pos[globalId * 3], d_pos[globalId * 3 + 1], d_pos[globalId * 3 + 2]);
-
-		currentParticlePos.x += d_vel[globalId * 3] * velConvFactor * dT;
-		currentParticlePos.y += d_vel[globalId * 3 + 1] * velConvFactor * dT;
-		currentParticlePos.z += d_vel[globalId * 3 + 2] * velConvFactor * dT;
 
 		float3 totalAcceleration = make_float3(0, 0, 0);	//	in km/s^2
 
@@ -253,15 +249,39 @@ __global__ void cudaMoveBodiesByDT_AllPairs(float *d_pos,
 		
 		//	---
 
-		d_vel[globalId * 3] += totalAcceleration.x * (dT * secPerMYr);
-		d_vel[globalId * 3 + 1] += totalAcceleration.y * (dT * secPerMYr);
-		d_vel[globalId * 3 + 2] += totalAcceleration.z * (dT * secPerMYr);
-
-		d_pos[globalId * 3] = currentParticlePos.x;
-		d_pos[globalId * 3 + 1] = currentParticlePos.y;
-		d_pos[globalId * 3 + 2] = currentParticlePos.z;
+		d_acc[3 * globalId] = totalAcceleration.x;
+		d_acc[3 * globalId + 1] = totalAcceleration.y;
+		d_acc[3 * globalId + 2] = totalAcceleration.z;
 	}
 }
+
+
+
+__global__ void cudaMoveBodiesByDT_Euler(float *d_pos,
+										 float *d_vel,
+										 float *d_acc,
+										 float dT,
+										 int NUM_PARTICLES)
+{
+
+	int threadId = threadIdx.x;
+	int blockId = blockIdx.x;
+
+	int globalId = blockId * blockDim.x + threadId;
+
+	if(globalId < NUM_PARTICLES){
+
+		d_pos[globalId * 3] += d_vel[globalId * 3] * velConvFactor * dT;
+		d_pos[globalId * 3 + 1] += d_vel[globalId * 3 + 1] * velConvFactor * dT;
+		d_pos[globalId * 3 + 2] += d_vel[globalId * 3 + 2] * velConvFactor * dT;
+
+		d_vel[globalId * 3] += d_acc[globalId * 3] * (dT * secPerMYr);
+		d_vel[globalId * 3 + 1] += d_acc[globalId * 3 + 1] * (dT * secPerMYr);
+		d_vel[globalId * 3 + 2] += d_acc[globalId * 3 + 2] * (dT * secPerMYr);
+	}
+}
+
+
 
 void genBodies(float *d_pos, float *d_vel, float *d_mas, float *d_rad, int NUM_PARTICLES, float Ms, float Rs, float Mdm, float Rdm, float cloudChance, float cloudMassCoef, float a, float Ca, int blockSize){
 
@@ -282,13 +302,14 @@ void genBodies(float *d_pos, float *d_vel, float *d_mas, float *d_rad, int NUM_P
 	curandDestroyGenerator(gen);
 }
 
-void moveBodiesByDT(float *d_pos, float *d_vel, float *d_mas, float *d_rad, float dT, int NUM_PARTICLES, float Ms, float Rs, float Mdm, float Rdm, int blockSize){
+void moveBodiesByDT_Euler(float *d_pos, float *d_vel, float *d_acc, float *d_mas, float *d_rad, float dT, int NUM_PARTICLES, float Ms, float Rs, float Mdm, float Rdm, int blockSize){
 
 
 	int blocks = NUM_PARTICLES / blockSize + (NUM_PARTICLES % blockSize == 0 ? 0:1);
 
 	int shmem = blockSize * 5 * sizeof(float);
 
-	cudaMoveBodiesByDT_AllPairs<<<blocks, blockSize, shmem>>>(d_pos, d_vel, d_mas, d_rad, dT, NUM_PARTICLES, Mdm, Rdm);
+	getAccelerations_allPairs<<<blocks, blockSize, shmem>>>(d_pos, d_mas, d_rad, d_acc, NUM_PARTICLES, Mdm, Rdm);
+	cudaMoveBodiesByDT_Euler<<<blocks, blockSize>>>(d_pos, d_vel, d_acc, dT, NUM_PARTICLES);
 
 }

@@ -49,9 +49,19 @@ private:
 
 	//	Cuda pointer to positional vector data (PCs)
 	float *d_positions;
+	float *d_oldPositions;
 
 	//	Cuda pointer to velocity vector data (Km/s)
 	float *d_velocities;
+	float *d_oldVelocities;
+
+	//	Cuda pointer to acceleration vector data (Km/s^2)
+	float *d_accelerations;
+	float *d_oldAccelerations;
+
+	//	Cuda pointer to jerk vector data (Km/s^3)
+	float *d_jerks;
+	float *d_oldJerks;
 
 	//	Cuda pointer to mass data (SM)
 	float *d_masses;

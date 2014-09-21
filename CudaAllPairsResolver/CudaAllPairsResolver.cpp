@@ -128,8 +128,20 @@ bool CudaAllPairsResolver::initialize(YAML::Node &config){
 	cudaGLRegisterBufferObject(posVboID);
 	cudaGLMapBufferObject( (void **)&d_positions, posVboID);
 
+	//	Allocate memory for old velocities vector
+	cudaMalloc((void **)&d_oldPositions, 3 * NUM_PARTICLES * sizeof(float));
+
 	//	Allocate memory for velocities vector
 	cudaMalloc((void **)&d_velocities, 3 * NUM_PARTICLES * sizeof(float));
+	cudaMalloc((void **)&d_oldVelocities, 3 * NUM_PARTICLES * sizeof(float));
+
+	//	Allocate memory for accelerations vector
+	cudaMalloc((void **)&d_accelerations, 3 * NUM_PARTICLES * sizeof(float));
+	cudaMalloc((void **)&d_oldAccelerations, 3 * NUM_PARTICLES * sizeof(float));
+
+	//	Allocate memory for jerks vector
+	cudaMalloc((void **)&d_jerks, 3 * NUM_PARTICLES * sizeof(float));
+	cudaMalloc((void **)&d_oldJerks, 3 * NUM_PARTICLES * sizeof(float));
 
 	//	Allocate memory for masses
 	cudaMalloc((void **)&d_masses, NUM_PARTICLES * sizeof(float));
@@ -149,13 +161,20 @@ void CudaAllPairsResolver::advanceTimeStep() {
 
 	cudaGLMapBufferObject( (void **)&d_positions, posVboID);
 
-	moveBodiesByDT(d_positions, d_velocities, d_masses, d_scaleRadii, dT, NUM_PARTICLES, Ms, Rs, Mdm, Rdm, threadsPerBlock);
+	moveBodiesByDT_Euler(d_positions, d_velocities, d_accelerations, d_masses, d_scaleRadii, dT, NUM_PARTICLES, Ms, Rs, Mdm, Rdm, threadsPerBlock);
 
 	cudaGLUnmapBufferObject(posVboID);
 }
 
 
 CudaAllPairsResolver::~CudaAllPairsResolver(void){
+	cudaFree(d_oldPositions);
 	cudaFree(d_velocities);
+	cudaFree(d_oldVelocities);
+	cudaFree(d_accelerations);
+	cudaFree(d_oldAccelerations);
+	cudaFree(d_jerks);
+	cudaFree(d_oldJerks);
 	cudaFree(d_masses);
+	cudaFree(d_scaleRadii);
 }
